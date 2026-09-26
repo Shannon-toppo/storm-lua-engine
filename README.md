@@ -8,9 +8,9 @@ RustとTypeScript／WebAssembly向けの組み込みライブラリです。ビ�
 
 [はじめる](docs/guide/getting-started.md) · [Addonを組み込む](docs/guide/addons.md) · [ホスト機能とログ](docs/guide/host-services.md) · [APIリファレンス](docs/guide/api-reference.md) · [実行例](examples/README.md)
 
-## Playground（計画）
+## Storm Lua Engine: Playground
 
-**Storm Lua Engine: Playground**を`app/`に追加する方針です。Storm MinのCLI/Webは維持します。Addon Labの必要なSDK確認部分はPlaygroundへ移行後、旧アプリを削除します。現在は計画段階で、下記の既存例は引き続き実行できます。[範囲と移行条件](docs/design/playground.md)
+SDKの機能を試すCLI/Webを`app/`に実装しています。Storm MinのCLI/Webとは併存します。Vehicle、Addon、解析・最適化、描画単体、デバッガ、値・保存、ホスト拡張を実SDKで操作できます。ゲーム世界や仮物理は持ちません。[起動と操作](app/README.md)。公開・配備は別の手順です。
 
 ## インストール
 
@@ -48,7 +48,7 @@ Rust: 必要なクレートをGitタグで参照します。例えば`storm-lua-
 
 ## ブラウザで試す
 
-[Addon Lab](examples/addon-lab/README.md)は、Three.jsとCodeMirrorを使うTypeScriptホストの実装例です。Luaの船団制御、3Dワールド、ホストAPI、ログ、保存・復元を試せます。船・地形・物理はサンプル専用の仮実装であり、ゲーム全体の再現ではありません。
+[Playground](app/README.md)は通常の公開SDK APIを使う公式の確認用アプリです。小さな独立例は[examples](examples/README.md)に残しています。
 
 ## アプリケーションに主導権を残す
 

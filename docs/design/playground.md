@@ -1,6 +1,6 @@
 # Storm Lua Engine: Playground
 
-決定日: 2026-09-26。**方針確定・アプリ実装は未完了。** SDKの実装状況は[STATUS](../../STATUS.md)、判断理由は[ADR 0006](../adr/0006-playground-coexistence.md)を参照する。本文はPlaygroundの責務・範囲・移行の正本であり、公開済みの利用ガイドではない。
+決定日: 2026-09-26。**CLI/Web・Worker設定を実装し、Addon Labの移行・撤去を完了。公開・配備は未実施。** 操作は[app guide](../../app/README.md)、検証は[Playground検証](../verification/playground-20260926.md)。SDKの実装状況は[STATUS](../../STATUS.md)、判断理由は[ADR 0006](../adr/0006-playground-coexistence.md)を参照する。本文はPlaygroundの責務・範囲・移行の正本であり、公開済みの利用ガイドではない。
 
 ## 1. 目的とStorm Minとの併存
 
@@ -15,16 +15,16 @@ Storm Minは短縮・ゲーム向け出力に特化した既存CLI/Webを維持�
 | 配置 | 所有するもの |
 | --- | --- |
 | `app/` | Playgroundのアプリ、アプリ用設定、公開・配備の入口 |
-| `app/cli/` | SDKを明示的に駆動するCLI。Rust実装の場合も製品SDKではなくアプリ用Cargo package |
+| `app/cli/` | Node/TypeScriptで同じWASM SDKを明示駆動するCLI。Webと操作処理を共有 |
 | `app/web/` | SDKを試すWeb画面、画面状態、ブラウザ側の接続・操作 |
-| `app/wrangler.jsonc` | makkii.jpでLua Engine / Playgroundを公開するCloudflare Workerの設定を置く予定位置 |
+| `app/wrangler.jsonc` | makkii.jpでLua Engine / Playgroundを公開するCloudflare Workerの設定 |
 | `app/`配下の必要な配信コード・スクリプト | 上記Workerに実際に必要な処理、静的成果物の梱包・公開手順 |
 | 既存の`crates/`・`packages/lua-engine/`・`tools/` | 共通SDKとSDK自身のビルド・検証。アプリ専用処理は増やさない |
 | `examples/` | 小さく独立した組み込み例。大型Addon LabはPlaygroundへ整理する |
 
 ルート直下に新しい`cli/`、`web/`、Playground専用のWorker設定や配備スクリプトを追加しない。SDKは`app/`へ依存せず、アプリ依存やWeb資産をSDK利用者へ必須にしない。CLI/Webも通常の公開SDK APIを使い、内部ASTや非公開fixtureへの特権アクセスを前提にしない。
 
-現時点で作成する`app/README.md`は設計への入口であり、上記のコードやWorker設定がすべて存在するという意味ではない。CLIの実行ファイル名、正式URL、Cloudflare Worker名・route、配布版は実装・公開段階で決める。表示名と配置方針は再検討待ちにしない。
+現在の起動・CLI引数・確認例は[app/README](../../app/README.md)を参照します。Worker名は`storm-lua-engine-playground`、設定routeは`www.makkii.jp/tools/stormworks/storm-lua-engine/*`です。設定・dry-runの完了と実際の公開は区別し、既存Storm Minのrouteを変更しません。
 
 ### 二種類のWorkerを区別する
 
@@ -38,7 +38,7 @@ SDKはサイトのホスト名・配備パスを持たない。実際の公開�
 
 公開SDKの利用者向け機能ごとに、操作入口、入力例、結果の確認方法、対応環境を用意する。成功するボタンだけでなく、未対応・誤入力・実行制限などの失敗も確認できるようにする。内部最適化パスごとに専用画面を作ったり、内部ASTの補助関数すべてをGUI化したりすることは目的にしない。
 
-以下は実装開始時の機能群。詳細な公開面は[利用側API](../guide/api-reference.md)、[compiler guide](../guide/compiler.md)、モード別APIカタログと実exportを照合して確定する。表の各行を完了済みと扱わない。
+以下は実装開始時の機能群。詳細な公開面は[利用側API](../guide/api-reference.md)、[compiler guide](../guide/compiler.md)、モード別APIカタログと実exportを照合して確定する。操作/例/テストの実装対応は[app guide](../../app/README.md)と[検証](../verification/playground-20260926.md)を参照します。低レイヤーRust専用のprobeはconformanceの独立実行例で試します。
 
 | 機能群 | Playgroundで試す内容 |
 | --- | --- |
@@ -68,7 +68,7 @@ Addonのserver関数や地図、HTTP返信は、入力可能な最小のテス�
 
 入力ソース、設定、入力列など再現に必要なアプリ状態は一つの正本で持つ。ローカルリロードとversion付き入出力を共通のアプリ規約に沿って扱い、保存失敗や非互換形式を隠さない。完全なVMメモリや停止位置が保存できるとは説明しない。アカウント、クラウド同期、共同編集、プラグイン、IDEのワークスペース管理は追加しない。
 
-## 5. Addon Labの移行・廃止
+## 5. Addon Labの移行・廃止（完了）
 
 `examples/addon-lab`は独立アプリとして削除し、SDKを試すために必要な部分を`app/`のPlaygroundへ移行する。単なるディレクトリ移動・名称変更で、港と仮物理のアプリを存続させるものではない。
 

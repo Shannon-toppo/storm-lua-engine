@@ -1,14 +1,8 @@
 # Embedding examples
 
-## Playgroundへの整理
+## Playground
 
-**Storm Lua Engine: Playground**を`app/`に追加する方針です。Storm MinのCLI/Webは維持します。Addon Labの必要なSDK確認部分はPlaygroundへ移行後、旧アプリを削除します。現在は計画段階で、下記の既存例は引き続き実行できます。[範囲と移行条件](../docs/design/playground.md)
-
-## Addon Lab — Three.js + CodeMirror
-
-[Addon Lab](addon-lab/README.md)は、TypeScriptでワールドとserver関数を実装するブラウザサンプルです。日本語のLuaエディタ、3Dの港、実行・イベント・ログ・保存復元を一画面で試せます。仮物理とモデルはサンプル内に隔離し、本体エンジンや検証fixtureには含めません。
-
-起動は`npm --prefix examples/addon-lab ci`、`npm --prefix examples/addon-lab run dev`。本体WASMの事前ビルドを含む詳細はサンプルのREADMEを参照してください。
+SDK全体の対話的な確認は[Storm Lua Engine: Playground](../app/README.md)を利用してください。Addon Labのホスト・イベント・保存・エラー確認はappへ整理し、旧Labと仮物理・3Dワールドを削除しました。以下の小さな組み込み例は維持しています。
 
 ## Native
 

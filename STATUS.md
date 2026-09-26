@@ -14,11 +14,11 @@
 
 Engine native 445件、利用側回帰492件、Node/WASM/3ブラウザ、隔離npm consumerで確認。131入力×685条件の出力は従来版と同一で、Native/Engine-WASMも685組一致。詳細は[統合検証](docs/verification/compiler-integration-20260926.md)、使い方は[Compiler guide](docs/guide/compiler.md)。
 
-## Storm Lua Engine: Playground（方針確定・未実装）
+## Storm Lua Engine: Playground（実装・検証済み、未配備）
 
-Storm Minの既存CLI/Webとは併存する。PlaygroundはSDKの全公開機能を試すことだけを目的にし、`app/cli/`・`app/web/`へ配置する。makkii.jp公開用Cloudflare Workerも`app/`で管理する。Addon Labは必要なSDK確認部分とテストを移行後、旧アプリと不要な仮物理・3Dワールドを削除する。
+Storm Minとは併存するSDK確認用CLI/Webを`app/`へ実装しました。12確認例、共通操作runner、独立compiler/runtime Worker、入力/結果保存、version付き入出力、明示中断に対応します。ホスト・HTTP・地図は明示テスト入力であり、実通信や仮物理は持ちません。
 
-現在の`app/`は設計への入口のみ。Playgroundのアプリ実装、Addon Lab移行・削除、makkii.jp配備は未完了。[Playground設計](docs/design/playground.md)と[ADR 0006](docs/adr/0006-playground-coexistence.md)を参照する。Addon最適化、公開版の更新も別の未完了項目。
+Addon LabとThree.js/CodeMirrorのアプリ依存は撤去し、SDK確認はPlaygroundへ移しました。`app/wrangler.jsonc`は専用routeを持ち、dry-runまで確認。本番公開・SDKバージョン更新・pushは未実施。[操作](app/README.md)・[Playground検証](docs/verification/playground-20260926.md)。
 
 ## v0.1.0の実装済み範囲
 
@@ -34,4 +34,4 @@ Storm Minの既存CLI/Webとは併存する。PlaygroundはSDKの全公開機能
 | 梱包 | 43ファイルのnpm packageを独立環境へoffline installしてconsumer例を実行。SDKと静的サイトの48ファイル／3WASMをパス検査 |
 | CI | NativeのLinux／Windows／macOSと、WASM・ブラウザの検証をpush時に実行。結果はGitHub Actionsで管理 |
 
-今回のローカル測定は[0.1.0検証記録](docs/verification/release-0.1.0.md)、追加の検証・実装項目は[TASKS](TASKS.md)、公開時の確認事項は[リリース手順](docs/release.md)に記載しています。[Addon Lab](examples/addon-lab/README.md)の仮物理や3Dモデルは、本体の画面仕様の正本として扱いません。
+今回のローカル測定は[0.1.0検証記録](docs/verification/release-0.1.0.md)、追加の検証・実装項目は[TASKS](TASKS.md)、公開時の確認事項は[リリース手順](docs/release.md)に記載しています。過去のAddon Lab検証は当時の結果として保持し、現行Playgroundの結果と混同しません。

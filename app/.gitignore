@@ -1,2 +1,6 @@
+node_modules/
+dist/
+dist-site/
 public/engine/
+.wrangler/
 public/THIRD_PARTY_LICENSES.txt

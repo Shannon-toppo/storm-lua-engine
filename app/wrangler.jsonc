@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "storm-lua-engine-playground",
+  "compatibility_date": "2026-09-26",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "www.makkii.jp/tools/stormworks/storm-lua-engine/*",
+      "zone_name": "makkii.jp"
+    }
+  ],
+  "assets": {
+    "directory": "./dist-site",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
+}

@@ -124,7 +124,7 @@ TSの`/compiler`入口は実装済み。コンパイラ用loaderはVMを初期�
 
 Addon Labは必要なSDK接続・確認ケースをPlaygroundへ移した後、独立アプリとして削除する。港、船、仮物理、3Dワールドをそのまま移すものではない。既存の小さな組み込み例とSDK conformanceは維持する。Storm MinのCLI/Webは移設・削除しない。
 
-Playgroundの実装とmakkii.jp公開は未完了。SDKの実行・解析機能を暗黙に呼ばず、必要な操作を明示させる。公開アプリ、公開用Cloudflare Worker、ブラウザ内Web WorkerをSDK自身の意味論と分離する。
+Playgroundの実装・確認は完了し、makkii.jpへの本番公開は未実施。SDKの実行・解析機能を暗黙に呼ばず、必要な操作を明示させる。公開アプリ、公開用Cloudflare Worker、ブラウザ内Web WorkerをSDK自身の意味論と分離する。
 
 ## 9. デフォルト無効パスを残さない移行ゲート
 
@@ -168,4 +168,4 @@ raw呼び出し列、正規化後のDrawCommand、画素は異なる観測。命
 
 移行元で有用だった機能・テスト・ベンチを、統合しやすさだけで落とさない。機械的抽出は出力差分を検査し、修正・削除による意図的な差は別に報告する。不具合修正より過去の誤出力維持を優先せず、文字数退行や性能悪化も隠さない。
 
-初回SDK移管・4パス撤去・既存Storm Min接続と検証は完了。残る範囲は[TASKS](../../TASKS.md)と[Playground設計](playground.md)で追跡する。Playgroundの実装、Addon Labの削除、新SDKの公開、本番配備は未完了。過去の設計予定を実装済みAPIと混同しない。
+初回SDK移管・4パス撤去・既存Storm Min接続と検証は完了。残る範囲は[TASKS](../../TASKS.md)と[Playground設計](playground.md)で追跡する。PlaygroundとAddon Lab撤去は実装済み。新SDKの公開と本番配備は未実施。過去の設計予定を実装済みAPIと混同しない。

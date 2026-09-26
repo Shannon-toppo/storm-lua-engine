@@ -6,7 +6,7 @@
 
 Cargo workspaceと`packages/lua-engine/package.json`の版を揃え、`CHANGELOG.md`へ利用者に影響する変更を書きます。タグは`v<version>`とします。公開済みのタグやnpmの同じ版を差し替えず、修正は新しい版として出します。
 
-公開API、WASM ABI、描画命令、savedata/checkpoint、Addon Labのproject形式に非互換変更があるか確認します。形式を変える場合は版とreject条件、往復テストを同時に更新し、予定している非互換変更を分散したリリースへ持ち越しません。初版0.1.0では採用済みの画面731ケース、数値規則、保存形式を変更していません。
+公開API、WASM ABI、描画命令、savedata/checkpoint、Playgroundのproject形式に非互換変更があるか確認します。形式を変える場合は版とreject条件、往復テストを同時に更新し、予定している非互換変更を分散したリリースへ持ち越しません。初版0.1.0では採用済みの画面731ケース、数値規則、保存形式を変更していません。
 
 ## 検証とビルド
 
@@ -14,17 +14,17 @@ Cargo workspaceと`packages/lua-engine/package.json`の版を揃え、`CHANGELOG
 
 `node tools/build-wasm.mjs --with-tests`と`node tools/test-wasm.mjs --with-tests`では、製品WASMだけでなく独立したLua backend probeも実行します。`node tools/test-browser.mjs`では3エンジンで直接描画・実Lua描画・ホスト機能を検査します。
 
-Addon Labは`npm --prefix examples/addon-lab ci`でローカルSDK依存を更新した後、`npm --prefix examples/addon-lab run build`、`npm --prefix examples/addon-lab test`を実行します。全ブラウザの操作試験は`LAB_BROWSERS=chromium,firefox,webkit npm --prefix examples/addon-lab run test:e2e`です。
+Playgroundは`npm --prefix app ci`でローカルSDK依存を更新した後、`npm --prefix app run build`、`npm --prefix app test`を実行します。全ブラウザの操作試験は`npm --prefix app run test:browser`です。
 
-画面のないLinuxランナーでは、Addon LabのWebGL試験を`LAB_BROWSERS=chromium,firefox,webkit LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a npm --prefix examples/addon-lab run test:e2e`で実行します。Xvfbとブラウザ依存はPlaywrightの`install --with-deps`で用意します。
+画面のないLinuxランナーでも、Playgroundはheadlessブラウザ試験を`npm --prefix app run test:browser`で実行します。ブラウザ依存はPlaywrightの`install --with-deps`で用意します。
 
-`node tools/check-package.mjs`はJS export、WASM、必須の通知、公開先設定を確認します。`npm pack`のprepackにも組み込まれており、TypeScriptだけをビルドした不完全な配布物を拒否します。パス検査は`node tools/check-artifacts.mjs packages/lua-engine/dist examples/addon-lab/dist`で実行します。
+`node tools/check-package.mjs`はJS export、WASM、必須の通知、公開先設定を確認します。`npm pack`のprepackにも組み込まれており、TypeScriptだけをビルドした不完全な配布物を拒否します。パス検査は`node tools/check-artifacts.mjs packages/lua-engine/dist app/dist`で実行します。
 
 ## 同じ成果物を検査して公開する
 
 `packages/lua-engine/`で`npm pack --json --pack-destination <出力先>`を実行し、生成したtarballを`node tools/test-package.mjs <tarballのパス>`で検査します。独立環境へoffline installし、Lua・描画・公開exportとドキュメントのconsumer例を実行します。引数なしの場合は検査用tarballを一時生成します。
 
-GitHub Releasesには検査したnpm tarball、Addon Labの静的サイトZIP、`SHA256SUMS`を添付します。静的サイトZIPには`dist/`の内容と必要な権利表示を含めます。個人パス、調査資料、内部履歴のバックアップ、node_modules、Cargo target、テスト専用WASMは配布しません。Rust用ソースはタグから取得します。
+GitHub Releasesには検査したnpm tarball、Playgroundの静的サイトZIP、`SHA256SUMS`を添付します。静的サイトZIPには`dist/`の内容と必要な権利表示を含めます。個人パス、調査資料、内部履歴のバックアップ、node_modules、Cargo target、テスト専用WASMは配布しません。Rust用ソースはタグから取得します。
 
 公開するcommitのCI成功を確認し、同じcommitへタグを付けます。npmは検査済みtarballを`npm publish <tarballのパス> --access public --tag latest --registry=https://registry.npmjs.org/ --ignore-scripts`で公開します。認証や二要素認証が必要な場合は管理者の認証手順を使い、トークンをコード、ログ、チャットへ記録しません。
 
@@ -38,11 +38,11 @@ GitHub Releasesには検査したnpm tarball、Addon Labの静的サイトZIP、
 
 A release containing the compiler subpath must additionally run `node tools/build-compiler.mjs`, `npm --prefix packages/lua-engine run test:compiler` and `node tools/test-compiler-browser.mjs`. Build compiler assets before the full package gate. The isolated installed consumer exercises both compiler and runtime together, including property snapshot preservation. Do not reuse the published 0.1.0 number for this expanded SDK; select a new version as an explicit release action.
 
-## Playgroundの配布への切り替え（未実施）
+## Playgroundの配布
 
-[Playground設計](design/playground.md)に従い、Addon LabのSDK確認部分を`app/`へ移行する。移行完了時に上記Labのビルド・テスト・静的ZIP・通知の参照をPlaygroundへ更新する。現在のアプリとCIはまだLabを使っているため、先に検証手順だけを削除しない。過去版のRelease資産は書き換えない。
+`app/`にはCLI/Webと公開用Worker設定を置きます。`npm --prefix app run build`は`app/dist`と専用route向け`app/dist-site`を生成します。`npm --prefix app run deploy:dry-run`は梱包検査であり、本番配備ではありません。Storm Minの製品・Worker・routeは維持します。
 
-PlaygroundのCLI/Webとmakkii.jp公開用Cloudflare Workerは`app/`で管理し、ルートへ専用設定を増やさない。Storm Minの製品・Worker・routeは維持する。正式route・版・権利表示・保存形式を確認してから公開し、設計の採用だけで配備を実行しない。
+Addon Labの現在のソース・CI参照は撤去済みです。過去版ReleaseのLab資産は書き換えません。配布物のライセンスとsource/WASM版の一致を確認し、実配備は明示的に実施します。
 
 ## 環境契約変更の公開ゲート
 

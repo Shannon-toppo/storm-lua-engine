@@ -21,7 +21,7 @@
 | P2 | drawMapとmap paletteのhost接続 | Native provider、runtime WASMのJS provider、命令順と失敗検査 |
 | P2 | print/debug.logの出力ルート | onLog／flush／drain、source+bytes、Lua失敗時の配送、sink error明示 |
 | P3 | HTTP request/reply/cancel | vehicle async／addon server、世代token、再入・duplicate・size検証 |
-| P2 sample | Three.js / CodeMirrorのAddonホスト例 | examples/addon-lab。TSホスト、仮物理、3ブラウザ操作検証、project往復 |
+| P2 sample | Three.js / CodeMirrorのAddonホスト例 | v0.1.0時点の記録。現行はappのPlaygroundにSDK確認を移行し、旧アプリは撤去済み |
 | P2 platforms | Native Linux／Windows／macOS | GitHub Actionsで全featuresのテスト、lints、型検証を実行 |
 | P2 docs | OSS README・consumer guide・実行例 | Node例をpacked packageの独立offline install先で実行。Rust例も実行 |
 | P3 | owned Worker transferとCanvas adapter | libraryのscheduler強制なし、host-owned exampleで実行検証 |
@@ -60,10 +60,10 @@ consumer向けの[Native differential example](conformance/examples/differential
 | 作業 | 完了条件 | 状態 |
 | --- | --- | --- |
 | Storm Minとの併存・Playgroundの範囲とapp配置 | [Playground設計](docs/design/playground.md)・[ADR 0006](docs/adr/0006-playground-coexistence.md)に従う | 方針確定 |
-| `app/cli/`・`app/web/` | 全公開SDK機能と操作/実行例/テストの対応を確認。実行・解析・描画・debug・Addon・サービスを含め、未対応は明示 | 未実装 |
-| Addon Labの整理・廃止 | SDK確認部分と必要テストをappへ移管し、仮物理/3Dワールドと旧アプリ、旧CI/配布参照を撤去 | 未実施 |
-| makkii.jp向け公開用Worker | 設定と必要な配信処理をapp内で管理。サブパス・WASM/Worker・通知・版を検査し、Storm Minのrouteを維持 | 未実装・未配備 |
-| SDK公開前の追加整理 | API-profile照合、必要な全件回帰・性能測定、版・配布手順と公開ガイドの整合 | 残件 |
+| `app/cli/`・`app/web/` | 全公開SDK機能と操作/実行例/テストの対応を確認。実行・解析・描画・debug・Addon・サービスを含め、未対応は明示 | Playground実装・検証済み |
+| Addon Labの整理・廃止 | SDK確認部分と必要テストをappへ移管し、仮物理/3Dワールドと旧アプリ、旧CI/配布参照を撤去 | 移行・撤去済み |
+| makkii.jp向け公開用Worker | 設定と必要な配信処理をapp内で管理。サブパス・WASM/Worker・通知・版を検査し、Storm Minのrouteを維持 | 設定・dry-run済み／本番未配備 |
+| SDK公開前の追加整理 | 環境プロファイル・診断・外部名の是正は実装済み。追加の実ゲーム裏付け、全収集コーパス回帰・性能測定、公開版の選定は別作業 | 残件 |
 | Addonコンパイラ・高度な最適化後debug等 | 独立の機能追加として設計・検証。Playground追加のために実装したことにしない | 将来対応 |
 
 Storm MinのCLI/WebをEngineへ移設・廃止する作業は行わない。PlaygroundへIDE、共同編集、クラウド同期、ゲーム世界のシミュレーションを追加しない。公開・配備は別の明示操作とする。

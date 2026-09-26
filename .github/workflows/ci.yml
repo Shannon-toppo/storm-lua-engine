@@ -89,15 +89,12 @@ jobs:
       - name: Package content inspection (no publish)
         working-directory: packages/lua-engine
         run: npm pack --dry-run
-      - name: Build and test the Addon Lab consumer
-        working-directory: examples/addon-lab
+      - name: Build and test the Playground consumer
+        working-directory: app
         run: |
           npm ci --no-audit --no-fund
           npm run build
           npm test
-      - name: Addon Lab browser interactions
-        working-directory: examples/addon-lab
-        env:
-          LAB_BROWSERS: chromium,firefox,webkit
-          LIBGL_ALWAYS_SOFTWARE: '1'
-        run: xvfb-run -a npm run test:e2e
+      - name: Playground browser interactions
+        working-directory: app
+        run: npm run test:browser

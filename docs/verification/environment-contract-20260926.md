@@ -28,6 +28,7 @@ Host function overrides are installed before source execution and reapplied on r
 | Independent downstream JS semantic suite | 25 passed, including 640 simulated ticks of the large control program |
 | SDK TypeScript/consumer/package unit suite | 27 passed |
 | Actual runtime/raster/compiler WASM and Worker endpoint suite | 35 passed; independent Lua backend probe also passed |
+| Native/WASM full input comparison | 400 conditions: 392 byte-identical successful outputs and eight matching environment rejections |
 | All-target/all-feature Clippy | Passed with warnings denied |
 | Isolated installed package | 58 files installed offline; compiler, runtime, raster and consumer examples executed |
 

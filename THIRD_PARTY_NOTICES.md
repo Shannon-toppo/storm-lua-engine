@@ -18,10 +18,10 @@ mlua、Lua5.3、Serde等の解決済み依存については[自動生成一覧]
 
 ## Toolchainとシステムライブラリ
 
-配布WASMとJSに関連するEmscriptenおよびシステムライブラリの通知を[TOOLCHAIN_LICENSES.txt](packages/lua-engine/TOOLCHAIN_LICENSES.txt)へ、固定Rust toolchainの標準ライブラリ通知原文を[RUST_STD_LICENSES.html](packages/lua-engine/RUST_STD_LICENSES.html)へ収録しています。Cargo依存の一覧とは別に同梱し、Addon Labの静的配布にも引き継ぎます。
+配布WASMとJSに関連するEmscriptenおよびシステムライブラリの通知を[TOOLCHAIN_LICENSES.txt](packages/lua-engine/TOOLCHAIN_LICENSES.txt)へ、固定Rust toolchainの標準ライブラリ通知原文を[RUST_STD_LICENSES.html](packages/lua-engine/RUST_STD_LICENSES.html)へ収録しています。Cargo依存の一覧とは別に同梱し、Playgroundの静的配布にも引き継ぎます。
 
 生成元の相対パス・SHA256は[manifest](tools/toolchain-licenses.json)、更新手順は[配布設計](docs/design/distribution.md)を参照してください。通知は対応するtoolchainの保守的な上位集合です。任意のSDK設定や別のビルド形態まで無条件に網羅するものではありません。
 
-## ブラウザサンプル
+## Playground
 
-サンプルは独立したnpm packageです。Three.js、CodeMirror等、実際に解決した実行時依存のlicenseをbuild時に収集します。港と船の簡易モデルはサンプルコードが作成し、エンジン本体に3D/UI依存を追加しません。[サンプル](examples/addon-lab/README.md)を参照してください。
+[Playground](app/README.md)は独立した確認用アプリです。SDKの実行・描画・コンパイラの許諾文を静的配布へ引き継ぎます。フロントエンドへThree.jsやCodeMirrorは同梱しません。Viteが生成するブラウザ用補助コードのMIT許諾もアプリの静的配布へ収録します。アプリのビルド・テスト用依存をSDKの実行時依存へ追加しません。

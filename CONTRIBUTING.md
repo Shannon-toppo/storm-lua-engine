@@ -40,3 +40,7 @@ Rustdoc broken intra-doc linksはCIでエラーにする。新しい依存・pub
 画面の期待値を現行実装で再生成して回帰テストを通す運用は禁止します。[画面fixture](fixtures/screen/README.md)の更新手順に従い、独立した根拠とレビューを付けてmanifestを更新してください。フォント定数の生成と期待RGBAの更新は別です。
 
 `node tools/check-artifacts.mjs`はビルド後の配布パスを検査します。packageの梱包内容、権利表示、SDK/system library、公開対象のGit履歴は別の確認項目です。CIを通しただけで、未公開の過去履歴を自動的に公開可能と判断しません。
+
+## Playground consumer
+
+SDKの全WASMとTypeScriptを先にビルドし、`npm --prefix app ci`、`npm --prefix app run build`、`npm --prefix app test`、`npm --prefix app run test:browser`を実行します。SDKからappへの逆依存は作りません。配布物は`node tools/check-artifacts.mjs app/dist`で検査します。公開用Workerのdry-runは本番配備とは区別します。
