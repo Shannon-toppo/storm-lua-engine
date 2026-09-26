@@ -29,6 +29,8 @@ pub struct MicrocontrollerConfig {
     pub environment: storm_lua_spec::environment::EnvironmentProfile,
     /// Explicit host extensions, installed before load and preserved on reset.
     pub bindings: storm_lua_vm::bindings::HostBindings,
+    /// Development include-once require, explicit and available only in extended.
+    pub require_loader: Option<storm_lua_vm::source::RequireLoader>,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Phase {
@@ -51,8 +53,10 @@ pub struct Microcontroller {
     vm: Vm,
     state: Rc<RefCell<State>>,
     limits: ExecutionLimits,
-    source: Vec<u8>,
-    source_name: String,
+    sources: Vec<storm_lua_vm::source::SourceChunk>,
+    source_bytes: usize,
+    pending_source: Option<storm_lua_vm::source::SourceChunk>,
+    require_loader: Option<storm_lua_vm::source::RequireLoader>,
     dev_logs: bool,
     environment: storm_lua_spec::environment::EnvironmentProfile,
     bindings: storm_lua_vm::bindings::HostBindings,
@@ -61,6 +65,9 @@ impl Microcontroller {
     /// 未開始のコントローラーを作成します。loadを呼び出す前にホストオプションを設定してください。
     pub fn new(config: MicrocontrollerConfig) -> Result<Self, VmError> {
         config.bindings.validate(config.environment)?;
+        if let Some(loader) = &config.require_loader {
+            loader.validate_configuration(config.environment, &config.bindings)?;
+        }
         let mut vm = Vm::with_environment(config.limits, config.environment)?;
         let state = Rc::new(RefCell::new(State {
             input: CompositeSignal::default(),
@@ -73,26 +80,42 @@ impl Microcontroller {
         }));
         vm.configure(|lua, env| bindings::install(lua, env, Rc::clone(&state)))?;
         vm.install_bindings(&config.bindings)?;
+        if let Some(loader) = &config.require_loader {
+            vm.install_require_loader(loader)?;
+        }
         Ok(Self {
             vm,
             state,
             limits: config.limits,
-            source: Vec::new(),
-            source_name: String::new(),
+            sources: Vec::new(),
+            source_bytes: 0,
+            pending_source: None,
+            require_loader: config.require_loader,
             dev_logs: false,
             environment: config.environment,
             bindings: config.bindings,
         })
     }
-    /// プロパティがトップレベルで利用可能な状態でソースチャンクを実行します。
+    /// Execute another named chunk in the existing environment. Completed loads
+    /// are retained in order for reset; this appends rather than replacing code.
+    /// Chunk locals are distinct. A failed or abandoned suspended load is not saved.
     pub fn load(&mut self, source: &[u8], name: &str) -> Result<RunOutcome, VmError> {
         self.vm.ensure_idle()?;
+        storm_lua_vm::source::validate_source(source, name)?;
+        if self.sources.len() >= storm_lua_vm::source::MAX_PROGRAM_CHUNKS
+            || source.len() > storm_lua_vm::source::MAX_PROGRAM_BYTES - self.source_bytes
+        {
+            return Err(VmError::new(
+                ErrorKind::Limit,
+                "retained load sequence exceeds 128 chunks or 8 MiB",
+            ));
+        }
+        self.pending_source = Some(storm_lua_vm::source::SourceChunk {
+            source: source.to_vec(),
+            name: name.to_owned(),
+        });
         self.state.borrow_mut().phase = Phase::Init;
         let result = self.vm.execute(source, name);
-        if result.is_ok() {
-            self.source = source.to_vec();
-            self.source_name = name.to_owned();
-        }
         self.finish(result)
     }
     /// 1 tickを実行します。出力チャンネルは明示的に上書きされるまで値を保持します。
@@ -128,6 +151,12 @@ impl Microcontroller {
     fn finish(&mut self, result: Result<RunOutcome, VmError>) -> Result<RunOutcome, VmError> {
         if !matches!(result, Ok(RunOutcome::Suspended)) {
             self.state.borrow_mut().phase = Phase::Idle;
+            if let Some(chunk) = self.pending_source.take() {
+                if result.is_ok() {
+                    self.source_bytes += chunk.source.len();
+                    self.sources.push(chunk);
+                }
+            }
         }
         result
     }
@@ -183,21 +212,24 @@ impl Microcontroller {
     pub fn is_failed(&self) -> bool {
         self.vm.is_failed()
     }
-    /// VMを再作成し、現在のプロパティを用いて保存されたソースを再実行します。
-    /// 再作成が成功した後にのみこのインスタンスを置換します。デバッガのハンドルは失効します。
+    /// Recreate with current properties/bindings and replay all completed loads
+    /// in order. Module caches are fresh; the host loader is called again.
+    /// Discard unfinished loads, runtime state and debugger handles. Replace this
+    /// VM only after replay succeeds; external host side effects cannot roll back.
     pub fn reset(&mut self) -> Result<(), VmError> {
         let config = MicrocontrollerConfig {
             properties: self.state.borrow().properties.clone(),
             limits: self.limits,
             environment: self.environment,
             bindings: self.bindings.clone(),
+            require_loader: self.require_loader.clone(),
         };
         let mut next = Self::new(config)?;
         if self.dev_logs {
             next.enable_dev_logs()?;
         }
-        if !self.source.is_empty() {
-            next.load(&self.source, &self.source_name)?;
+        for chunk in &self.sources {
+            next.load(&chunk.source, &chunk.name)?;
         }
         *self = next;
         Ok(())

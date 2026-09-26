@@ -24,11 +24,15 @@ try{
    let phase='initial';const errors=[];const requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(`${phase}: ${m.text()} ${JSON.stringify(m.location())}`);});page.on('request',r=>requests.push(r.url()));
    await page.goto(url);await page.locator('[data-recipe="vehicle"]').waitFor();assert.equal(await page.title(),'Storm Lua Engine: Playground');
    assert.equal(requests.some(u=>u.endsWith('.wasm')),false,'initial UI must not initialize WASM');
-   const ids=await page.locator('[data-recipe]').evaluateAll(nodes=>nodes.map(e=>e.dataset.recipe));assert.equal(ids.length,12);
+   const ids=await page.locator('[data-recipe]').evaluateAll(nodes=>nodes.map(e=>e.dataset.recipe));assert.equal(ids.length,13);
    for(const id of ids){
     await page.locator(`[data-recipe="${id}"]`).click();await page.locator('#run').click();
     await page.waitForFunction(()=>['complete','error'].includes(document.body.dataset.runState));
     assert.equal(await page.locator('body').getAttribute('data-run-state'),'complete',`${name}/${id}: ${await page.locator('#error-banner').textContent()}`);
+    if(id==='source-loading'){
+     assert.ok((await page.locator('#results').textContent()).includes('hostCalls'));
+     if(name==='chromium')await page.screenshot({path:join(evidence,'source-loading-desktop.png'),fullPage:true,caret:'initial'});
+    }
     if(id==='vehicle'){
      assert.equal(await page.locator('#screen').getAttribute('width'),'64');assert.equal(await page.locator('#screen').getAttribute('height'),'32');
      const opaque=await page.locator('#screen').evaluate(canvas=>Array.from(canvas.getContext('2d').getImageData(0,0,64,32).data).some(v=>v>0));assert.equal(opaque,true);

@@ -48,3 +48,5 @@ pub mod value;
 
 /// Trusted host value/function bindings, separate from script-visible standard libraries.
 pub mod bindings;
+/// Owned source chunks and explicit development-time include loading.
+pub mod source;

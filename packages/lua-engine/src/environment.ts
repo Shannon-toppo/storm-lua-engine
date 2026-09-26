@@ -1,6 +1,7 @@
 /** Script-visible environment selection; independent from Vehicle/Addon and host debugging. */
 import { encodeLuaValue, type LuaValue } from './values.js';
 import type { ServerFunctions } from './host.js';
+import type { RequireLoader } from './source.js';
 export type EnvironmentProfile = 'game' | 'extended';
 export interface HostBindings {
   /** Dot-separated paths. null removes a binding. */
@@ -18,12 +19,17 @@ export function bindingPaths(bindings: HostBindings = {}): string[] {
   }
   return paths.sort();
 }
-export function environmentWire(environment: EnvironmentProfile = 'game', bindings: HostBindings = {}): Record<string, unknown> {
+export function environmentWire(environment: EnvironmentProfile = 'game', bindings: HostBindings = {}, requireLoader?: RequireLoader): Record<string, unknown> {
   if (environment !== 'game' && environment !== 'extended') throw new TypeError('Unknown Lua environment');
   const paths = bindingPaths(bindings);
+  if (requireLoader !== undefined) {
+    if (typeof requireLoader !== 'function') throw new TypeError('requireLoader must be a synchronous function');
+    if (environment !== 'extended') throw new TypeError('requireLoader requires the extended environment');
+    if (paths.some(path => path === 'require' || path.startsWith('require.'))) throw new TypeError('requireLoader conflicts with require bindings');
+  }
   if (paths.length && environment !== 'extended') throw new TypeError('Host bindings require the extended environment');
   if (Object.values(bindings.functions ?? {}).some(value => typeof value !== 'function')) throw new TypeError('Host bindings must be synchronous functions');
-  return {environment, bindings: {
+  return {environment, requireLoader: requireLoader !== undefined, bindings: {
     values: Object.fromEntries(Object.entries(bindings.values ?? {}).map(([path, value]) => [path, encodeLuaValue(value)])),
     functions: Object.keys(bindings.functions ?? {}),
   }};

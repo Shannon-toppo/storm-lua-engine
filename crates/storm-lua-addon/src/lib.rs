@@ -35,6 +35,8 @@ pub struct AddonConfig {
     pub environment: storm_lua_spec::environment::EnvironmentProfile,
     /// Explicit host extensions, retained across savedata reload.
     pub bindings: storm_lua_vm::bindings::HostBindings,
+    /// Explicit development require; cache is recreated during savedata reload.
+    pub require_loader: Option<storm_lua_vm::source::RequireLoader>,
 }
 impl Default for AddonConfig {
     fn default() -> Self {
@@ -47,6 +49,7 @@ impl Default for AddonConfig {
             dev_logs: false,
             environment: Default::default(),
             bindings: Default::default(),
+            require_loader: None,
         }
     }
 }
@@ -119,6 +122,9 @@ impl Addon {
             }
         }
         config.bindings.validate(config.environment)?;
+        if let Some(loader) = &config.require_loader {
+            loader.validate_configuration(config.environment, &config.bindings)?;
+        }
         for path in config
             .bindings
             .values
@@ -153,6 +159,9 @@ impl Addon {
         }));
         vm.configure(|lua, env| bindings::install(lua, env, Rc::clone(&state)))?;
         vm.install_bindings(&config.bindings)?;
+        if let Some(loader) = &config.require_loader {
+            vm.install_require_loader(loader)?;
+        }
         if config.dev_logs {
             vm.enable_logs()?;
         }

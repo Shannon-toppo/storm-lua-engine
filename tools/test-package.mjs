@@ -43,5 +43,7 @@ console.log('Isolated installed package: Lua execution, raster, export paths and
   console.log(run(process.execPath,['smoke.mjs'],temporary).trim());
   await writeFile(join(temporary,'consumer.mjs'),await readFile(join(root,'examples/consumer/node.mjs')));
   console.log(run(process.execPath,['consumer.mjs'],temporary).trim());
+  await writeFile(join(temporary,'source-loading.mjs'),await readFile(join(root,'examples/consumer/source-loading.mjs')));
+  console.log(run(process.execPath,['source-loading.mjs'],temporary).trim());
   console.log(`${provided?'Provided release tarball':`Packed ${packed.files.length} files`}; offline install used no repository source or runtime npm dependencies.`);
 }finally{await rm(temporary,{recursive:true,force:true});}

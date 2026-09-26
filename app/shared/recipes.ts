@@ -16,6 +16,15 @@ const commands=[
 const bindings={values:{'host.offset':11,pcall:null},functions:{'math.abs':{returns:[99]},'host.echo':{operation:'echo'}}};
 const base={kind:'storm-lua-playground',version:1} as const;
 export const RECIPES:Recipe[]=[
+ {...base,id:'source-loading',group:'解析と変換',title:'Source / requireと再初期化',environment:'extended',
+  description:'ホストのソースを別チャンクとして読み込み、そのファイルで停止します。前置き・本体・後置きもresetで順に再実行します。',
+  features:['requireLoader','sourceNames','includeOnce','loadHistory','resetReplay'],
+  source:'require("utility")\nlocal mainLocal=3\nfunction onTick()output.setNumber(1,helper()+mainLocal)end',
+  steps:[{op:'createVehicle',options:{environment},modules:{utility:{name:'@lib/utility.lua',source:'local private=4\nfunction helper()return shared+private end'}}},
+   {op:'load',source:'shared=10',name:'@prefix.lua'},{op:'breakpoints',points:[{source:'@lib/utility.lua',line:2}]},
+   {op:'load',source,name:'@main.lua'},{op:'stack'},{op:'breakpoints',points:[]},{op:'resume'},
+   {op:'load',source:'shared=20',name:'@suffix.lua'},{op:'tick',as:'result'},{op:'reset'},{op:'tick',as:'afterReset'},{op:'hostCalls'}]},
+
  {...base,id:'vehicle',group:'実行と描画',title:'Vehicle / シグナルとモニター',environment:'game',
   description:'入力×Gainを計算します。プロパティ更新とresetの違い、複数draw、ログを確認できます。',
   features:['createVehicle','load','io','tick','draw','frame','setProperties','reset','logs'],

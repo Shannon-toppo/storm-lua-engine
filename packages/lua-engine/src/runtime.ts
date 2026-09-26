@@ -25,6 +25,7 @@ export class VehicleVm extends ScriptVm {
   setProperties(properties: Properties): void {
     this.execute(() => this.bridge.upload(encodeProperties(properties),(pointer,length) => this.bridge.call('set_properties',this.handle,pointer,length)));
   }
+  /** Recreate the VM and replay all completed loads in order. Clears the require cache. */
   reset(): void { this.execute(() => this.bridge.call('reset',this.handle)); }
 }
 function budgets(options: ScriptOptions): [number,number] {
@@ -45,13 +46,13 @@ export class LuaEngine {
   /** ユーザーコードが実行される前に、プロパティ、ログ記録、およびマッププロバイダが構成されます。 */
   createVehicle(options: VehicleOptions = {}): VehicleVm {
     const [instructions,memory] = budgets(options);
-    const environment = environmentWire(options.environment, options.bindings);
+    const environment = environmentWire(options.environment, options.bindings, options.requireLoader);
     let key = 0, handle = 0;
     try {
-      if (options.mapProvider !== undefined || Object.keys(options.bindings?.functions ?? {}).length) {
+      if (options.mapProvider !== undefined || options.requireLoader !== undefined || Object.keys(options.bindings?.functions ?? {}).length) {
         if (options.mapProvider !== undefined && typeof options.mapProvider !== 'function') throw new TypeError('mapProvider must be a function');
         if (!this.hosts || !(this.bridge.capabilities & 16)) throw new EngineError(6,'This runtime cannot call JS host services');
-        key = this.hosts.register({...(options.mapProvider === undefined ? {} : {map: options.mapProvider}), ...(options.bindings?.functions === undefined ? {} : {functions: options.bindings.functions})});
+        key = this.hosts.register({...(options.requireLoader === undefined ? {} : {source: options.requireLoader}), ...(options.mapProvider === undefined ? {} : {map: options.mapProvider}), ...(options.bindings?.functions === undefined ? {} : {functions: options.bindings.functions})});
       }
       const config = encoder.encode(JSON.stringify({...environment, properties: JSON.parse(decoder.decode(encodeProperties(options.properties ?? {}))) as unknown}));
       handle = this.bridge.upload(config, (pointer,length) => this.bridge.query('new_vehicle',instructions,memory,key,pointer,length));
@@ -65,15 +66,15 @@ export class LuaEngine {
   /** アドオンモードは、型レベルおよび生ハンドルの境界の両方で明確に分離されています。 */
   createAddon(options: AddonOptions = {}): AddonVm {
     const [instructions,memory] = budgets(options);
-    const environment = environmentWire(options.environment, options.bindings);
+    const environment = environmentWire(options.environment, options.bindings, options.requireLoader);
     if (!(this.bridge.capabilities & 8)) throw new EngineError(6,'Addon profile is absent');
     const server = {...options.server}; const names = Object.keys(server);
     if (names.length > 512 || Object.values(server).some(value => typeof value !== 'function')) throw new TypeError('Invalid server function configuration');
     let key = 0, handle = 0;
     try {
-      if (names.length || Object.keys(options.bindings?.functions ?? {}).length) {
+      if (names.length || options.requireLoader !== undefined || Object.keys(options.bindings?.functions ?? {}).length) {
         if (!this.hosts || !(this.bridge.capabilities & 16)) throw new EngineError(6,'This runtime cannot call JS host services');
-        key = this.hosts.register({server, ...(options.bindings?.functions === undefined ? {} : {functions: options.bindings.functions})});
+        key = this.hosts.register({server, ...(options.requireLoader === undefined ? {} : {source: options.requireLoader}), ...(options.bindings?.functions === undefined ? {} : {functions: options.bindings.functions})});
       }
       const config = encoder.encode(JSON.stringify({...environment,newWorld:options.newWorld ?? true,properties:JSON.parse(decoder.decode(encodeProperties(options.properties ?? {}))) as unknown,savedata:options.savedata === undefined ? null : encodeLuaValue(options.savedata),server:names}));
       handle = this.bridge.upload(config,(pointer,length) => this.bridge.query('new_addon',instructions,memory,key,pointer,length));

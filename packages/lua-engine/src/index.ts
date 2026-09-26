@@ -19,3 +19,5 @@ export type { EnvironmentProfile, HostBindings } from './environment.js';
 export { bindingPaths } from './environment.js';
 
 export { ENVIRONMENT_CATALOG } from './environment-catalog.js';
+
+export type { SourceChunk, RequireLoader } from './source.js';

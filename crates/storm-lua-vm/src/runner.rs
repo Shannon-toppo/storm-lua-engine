@@ -206,9 +206,7 @@ impl Vm {
     /// テキストのみをコンパイルし、ホストバインディング組み込み後にそのトップレベルを実行します。
     pub fn execute(&mut self, source: &[u8], name: &str) -> Result<RunOutcome, VmError> {
         self.ensure_idle()?;
-        if source.len() > 1024 * 1024 {
-            return Err(VmError::new(ErrorKind::Limit, "Lua source exceeds 1 MiB"));
-        }
+        crate::source::validate_source(source, name)?;
         let function = self
             .lua
             .load(source)

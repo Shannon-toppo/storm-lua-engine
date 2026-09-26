@@ -110,10 +110,19 @@ export class PlaygroundSession {
   private options(command:Command):ScriptOptions {
     const options=object(command['options']??{});
     const id=this.id(command);
+    const modules=command['modules']===undefined?undefined:object(command['modules']);
+    const requireOptions=modules===undefined?{}:{requireLoader:(name:string)=>{
+      if(!Object.hasOwn(modules,name))throw new Error(`module not found: ${name}`);
+      const chunk=object(modules[name]);
+      const source=chunk['source'];
+      if(typeof source!=='string'&&!(source instanceof Uint8Array))throw new TypeError('module source must be text or bytes');
+      if(this.#calls.length>=256)this.#calls.shift();this.#calls.push({name:'requireLoader',args:[name]});
+      return {source,name:text(chunk['name'])};
+    }};
     const onLog=(record:LogRecord)=>{
       if(this.#logs.length>=256)this.#logs.shift();this.#logs.push({id,source:record.source,bytes:record.bytes});
     };
-    return {...options,bindings:this.bindings(options['bindings']),...(command['manualLogs']===true?{}:{onLog})} as ScriptOptions;
+    return {...options,...requireOptions,bindings:this.bindings(options['bindings']),...(command['manualLogs']===true?{}:{onLog})} as ScriptOptions;
   }
   private frameCopy(frame:{width:number;height:number;strideBytes:number;format:string;copy():Uint8Array}):unknown {
     return {kind:'frame',width:frame.width,height:frame.height,strideBytes:frame.strideBytes,format:frame.format,pixels:frame.copy()};

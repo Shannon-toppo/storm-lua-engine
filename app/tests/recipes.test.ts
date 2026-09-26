@@ -17,6 +17,7 @@ for(const item of RECIPES)test(`実SDK確認例: ${item.id}`,async()=>{
   const named=(name:string):Record<string,unknown>=>{const value=results.find(r=>project.steps[r.index]?.['as']===name)?.value;assert.ok(value&&typeof value==='object');return value as Record<string,unknown>;};
   const number=(name:string,index=0)=>{const io=named(name)['io'] as {outputNumbers:number[]};return io.outputNumbers[index];};
   switch(item.id){
+   case 'source-loading':assert.equal(number('result'),27);assert.equal(number('afterReset'),27);break;
    case 'vehicle':assert.equal(number('initial'),6);assert.equal(number('cached'),6);assert.equal(number('resetResult'),12);break;
    case 'compiler':assert.equal(number('result'),8);assert.ok(named('linked').map);assert.equal(named('ambient')['ok'],true);assert.deepEqual((named('ambient')['injectedAmbient'] as Record<string,unknown>)['sim'],['constant']);assert.ok(Number(named('compiled')['size'])>0);break;
    case 'reflection':assert.equal((named('compiled')['search'] as {mode:string}).mode,'lexical');assert.match(String(named('compiled')['code']),/originalFunction/);assert.equal(number('result'),9);break;

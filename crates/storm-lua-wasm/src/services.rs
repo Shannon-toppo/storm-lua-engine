@@ -82,6 +82,35 @@ fn bindings(
     result.validate(environment(request)?).map_err(convert)?;
     Ok(result)
 }
+fn require_loader(
+    request: &Value,
+    host_key: u32,
+) -> Result<Option<storm_lua_vm::source::RequireLoader>, BridgeError> {
+    match request.get("requireLoader") {
+        None | Some(Value::Bool(false)) => Ok(None),
+        Some(Value::Bool(true)) => {
+            if host_key == 0 {
+                return Err(invalid("missing source provider"));
+            }
+            Ok(Some(storm_lua_vm::source::RequireLoader::new(
+                move |name| {
+                    let bytes = host::call(host_key, &json!({"kind":"source", "name":name}))
+                        .map_err(host_error)?;
+                    let result = codec::parse(&bytes).map_err(host_error)?;
+                    let name = result["name"]
+                        .as_str()
+                        .ok_or_else(|| host_error(invalid("source chunk name is missing")))?
+                        .to_owned();
+                    let source = codec::byte_array(&result["source"]).map_err(host_error)?;
+                    let chunk = storm_lua_vm::source::SourceChunk { name, source };
+                    chunk.validate()?;
+                    Ok(chunk)
+                },
+            )))
+        }
+        _ => Err(invalid("requireLoader must be Boolean")),
+    }
+}
 pub(crate) fn create_vehicle(
     instructions: u32,
     memory: u32,
@@ -101,6 +130,7 @@ pub(crate) fn create_vehicle(
             properties,
             environment: environment(&request)?,
             bindings: bindings(&request, host_key)?,
+            require_loader: require_loader(&request, host_key)?,
         },
     )
     .map_err(convert)?;
@@ -154,6 +184,7 @@ pub(crate) fn create_addon(
         dev_logs: false,
         environment: environment(&request)?,
         bindings: bindings(&request, host_key)?,
+        require_loader: require_loader(&request, host_key)?,
     };
     session::insert(Script::Addon(Box::new(
         Addon::new(config).map_err(convert)?,

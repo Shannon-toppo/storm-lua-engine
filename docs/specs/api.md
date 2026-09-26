@@ -26,7 +26,7 @@ catalogのavailabilityはimplemented／host-extension／requires-providerを区�
 
 load/tick/draw/start/dispatch/resumeなどはcompleted／suspended／missingを区別し、失敗はResult／EngineErrorで返す。suspendedは同じcontinuationを保持する。未定義callbackはmissingであり、Lua処理を実行したという意味ではない。
 
-vehicleのloadは現在の環境へチャンクを読み込み、成功した最後のsourceをreset用に保持する。新しい独立プログラムには新しいvehicleを作る。Addonは明示的な段階制約を持ち、top-level→checkpoint復元→onCreate→イベントの順。詳細は[Addon contract](addon.md)。
+Vehicleのloadは現在の環境へチャンクを追加実行し、正常完了した全チャンクをresetで順に再実行する。失敗・未完了のloadは履歴へ追加しない。新しい独立プログラムには新しいvehicleを作る。Addonは明示的な段階制約を持ち、top-level→checkpoint復元→onCreate→イベントの順。詳細は[Addon contract](addon.md)。
 
 ログはVM内のbounded queueからホストへ渡す。TSのonLogはLuaから戻った後の配送。HTTPは要求・返信を分離し、同期server queryと混同しない。同じmoduleへの再入、ホスト関数のPromise結果を拒否する。
 
@@ -35,3 +35,5 @@ vehicleのloadは現在の環境へチャンクを読み込み、成功した最
 Compositeはf32固定I/O、画素は借用FrameLeaseまたは明示copy。Lua/host/saveの値はi64/f64/bytesを区別する。Addonの複合データにはcold-path codecを使用し、ゼロコピーを保証しない。[ABI](wasm-abi.md)
 
 実world、全server APIのゲーム側実処理、地形データ、ネットワーククライアント、VFS/IDE project管理、ゲームsaveXMLはエンジンが所有しない。matrix.rotationToFaceXZなど未確認の関数をstubで埋めない。ゲーム挙動の全edge caseの実測済みを主張せず、[TASKS](../../TASKS.md)に検証範囲を残す。
+
+開発用のrequireLoaderはextendedの明示機能であり、ホストがソースと名前を供給する。[source loading契約](source-loading.md)がキャッシュ・継続・予算・load履歴を所有する。

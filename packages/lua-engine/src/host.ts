@@ -1,5 +1,6 @@
 /** 1つのEmscriptenインスタンスおよび1つのVM登録にスコープされた同期ホストサービス。 */
 import { EngineError, byteArray, object, unsigned } from './bridge.js';
+import type { RequireLoader } from './source.js';
 import { MAP_COLORS, type MapColorKind } from './commands.js';
 import { decodeLuaValues, encodeLuaValues, type LuaValue } from './values.js';
 export type Rgba = readonly [number,number,number,number];
@@ -14,7 +15,7 @@ export type MapProvider = (request: MapRequest) => Uint8Array;
 /** 戻り値が1つの場合でも結果リストが必要です。[] は戻り値なし、[null] は nil 1つを意味します。 */
 export type ServerFunction = (...args: LuaValue[]) => readonly LuaValue[];
 export type ServerFunctions = Readonly<Record<string,ServerFunction>>;
-interface Services { readonly server?: ServerFunctions; readonly functions?: ServerFunctions; readonly map?: MapProvider }
+interface Services { readonly source?: RequireLoader; readonly server?: ServerFunctions; readonly functions?: ServerFunctions; readonly map?: MapProvider }
 const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8',{fatal:true});
 function finite(value: unknown, name: string): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError(`Invalid ${name}`);
@@ -47,6 +48,18 @@ export class HostDispatcher {
     const service = this.#services.get(key);
     if (!service) throw new EngineError(6,'No host services registered for this VM');
     const request = object(JSON.parse(decoder.decode(bytes)) as unknown);
+    if (request['kind'] === 'source') {
+      if (!service.source || typeof request['name'] !== 'string') throw new EngineError(6, 'Source provider is not configured');
+      const result = service.source(request['name']);
+      requireSynchronous(result);
+      const chunk = object(result);
+      const name = chunk['name'], raw = chunk['source'];
+      if (typeof name !== 'string' || !name.length || encoder.encode(name).length > 1024 || name.includes('\0')) throw new TypeError('Invalid source chunk name');
+      if (typeof raw !== 'string' && !(raw instanceof Uint8Array)) throw new TypeError('Source provider must return text or Uint8Array');
+      const source = typeof raw === 'string' ? encoder.encode(raw) : raw;
+      if (source.length > 1024 * 1024) throw new EngineError(2, 'Lua source exceeds 1 MiB');
+      return encoder.encode(JSON.stringify({name, source: Array.from(source)}));
+    }
     if (request['kind'] === 'server' || request['kind'] === 'binding') {
       const name = request['name'];
       const functions = request['kind'] === 'server' ? service.server : service.functions;

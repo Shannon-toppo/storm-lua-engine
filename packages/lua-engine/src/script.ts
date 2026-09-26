@@ -8,6 +8,8 @@ export interface HttpRequest { readonly token: HttpToken; readonly port: number;
 export interface ScriptOptions {
   readonly environment?: import('./environment.js').EnvironmentProfile;
   readonly bindings?: import('./environment.js').HostBindings;
+  /** Explicit include-once development loader. Requires extended; independent of file access. */
+  readonly requireLoader?: import('./source.js').RequireLoader;
   readonly instructionBudget?: number;
   readonly memoryBytes?: number;
   readonly devLogs?: boolean;
@@ -58,6 +60,7 @@ export abstract class ScriptVm {
     if (errors.length) throw new AggregateError(errors,'Log delivery failed; all drained records were attempted once');
     return records.length;
   }
+  /** Vehicle appends a named chunk; Addon accepts only its initial entry. */
   load(source: string | Uint8Array, name = '=script'): Outcome {
     return this.execute(() => {
       const code = typeof source === 'string' ? encoder.encode(source) : source;
