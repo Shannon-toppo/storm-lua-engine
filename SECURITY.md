@@ -17,3 +17,7 @@ hostのserver関数・地図provider・ログ配送先は信頼されたアプ�
 HTTPはデータの要求キューであり、Luaから任意ネットワークへ接続しない。ホストはport/path/権限/redirect/timeout/sizeを制御して、配送可能な時点でのみreplyする。Promiseを返す同期サービス・ログcallbackは明示エラーにする。
 
 owned valuesとsavedataはdepth/node/byte上限を持ち、循環・metatable・関数・不正キー・semantic duplicate keysを拒否する。携帯可能なcheckpointはVMやworld全体の保存ではなく、host側のworld状態/source/設定の保存責任を置き換えない。
+
+## Development source loader
+
+extendedのrequireLoaderは信頼されたホストからテキストと名前を供給する明示機能です。SDKはファイル検索・HTTP取得をしません。resolverは同じVMへ再入せずソースを返し、読み込み先はLuaの同じ継続・予算で実行します。1件と合計のソースサイズ・件数を制限し、bytecodeを拒否します。許可名、パスの対応、ソース世代はホストが管理します。[契約](docs/specs/source-loading.md)。

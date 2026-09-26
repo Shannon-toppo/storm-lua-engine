@@ -2,7 +2,7 @@
 
 SDKの解析・ビルド・最適化・実行・描画・デバッグ・ホスト接続を実際に試すCLI/Webです。Storm MinのCLI/Webとは併存し、置き換えません。ゲーム世界、仮物理、共同編集、クラウド保存は実装しません。
 
-このアプリは環境プロファイル対応の開発ブランチに含まれます。公開済み0.1.0の機能や、makkii.jpへの配備済み状態を意味しません。
+このアプリはv0.2.0の開発ブランチに含まれます。公開済み0.1.0の機能や、makkii.jpへの配備済み状態を意味しません。
 
 ## 準備と起動
 
@@ -13,6 +13,10 @@ SDKの解析・ビルド・最適化・実行・描画・デバッグ・ホス�
 Webは`npm --prefix app run dev`（127.0.0.1:5178）で開きます。配布物は`npm --prefix app run build`で作り、`npm --prefix app run preview`（127.0.0.1:4178）で確認できます。
 
 CLIのヘルプは`npm --prefix app run cli -- --help`、確認例の一覧は`npm --prefix app run cli -- --list`、実行は`npm --prefix app run cli -- --recipe vehicle`です。`--project FILE`はWebで書き出したJSONを読み込みます。`--jsonl`は同じSDKセッションへ1行ずつ操作JSONを渡します。`minify FILE`、`run FILE`にも対応し、拡張環境には`--extended`を明示します。
+
+## 利用者向けの正本
+
+通常の操作手順は[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/playground)に移設しています。以下はアプリの開発・検証に必要な操作概要です。
 
 ## 使い方
 
@@ -26,6 +30,7 @@ CLIのヘルプは`npm --prefix app run cli -- --help`、確認例の一覧は`n
 
 | 例 | 確認する機能 |
 | --- | --- |
+| Source | requireLoader、読み込み先ブレークポイント、前置き/本体/後置きのreset |
 | Vehicle | Number/Boolean I/O、プロパティ、複数draw、reset、ログ |
 | Compiler | analyze、非短縮リンク/map、minify、パス一覧、property走査 |
 | 動的_ENV | 動的値・関数参照の名前保持、字句短縮、描画 |

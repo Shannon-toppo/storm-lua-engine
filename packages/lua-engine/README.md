@@ -2,7 +2,7 @@
 
 **StormworksのビークルLuaとAddon Luaを、アプリケーションに組み込むためのWASM SDK。**
 
-このパッケージはRust製Lua 5.3実行系、Stormworks向けのCPU描画、同梱フォント、デバッガ、型定義を含みます。実際のワールド、地形データ、UI、ネットワーク通信は利用するアプリケーションが担当します。
+このパッケージはLua 5.3の実行基盤、Stormworks向けのCPU描画、同梱フォント、デバッガ、Vehicleコンパイラ、型定義を含みます。実際のワールド、地形データ、UI、ネットワーク通信は利用するアプリケーションが担当します。
 
 ## インストール
 
@@ -17,6 +17,8 @@ WASMと型定義は同梱済みです。利用時にRustやEmscriptenをイン�
 | ビークルLua | `loadRuntime()` → `engine.createVehicle(options)` |
 | Addon Lua | `loadRuntime()` → `engine.createAddon(options)` |
 | 描画のみ | `/raster`の`loadRaster()` → `createRaster(width, height)` |
+| 解析・リンク・minify | `/compiler`の`loadCompiler()` |
+| コンパイラWorker接続 | `/compiler-worker`。Workerの生成・終了はホストが管理 |
 | Canvas表示 | `/canvas`の`CanvasPresenter` |
 
 ビークルは`load(source)`、`tick()`、`draw(width, height)`で駆動します。Compositeは`vehicle.io`のFloat32Array/Uint8Arrayから読み書きし、画素は`vehicle.frame().pixels`で借用、`copy()`で所有します。メモリ拡張後はビューを取り直してください。
@@ -29,7 +31,7 @@ Addonは`load(source)`、`start()`、`tick(gameTicks)`、`dispatch(callback, arg
 
 `createAddon({ server: { getPlayers: () => [playerTable] } })`のように必要なserver関数を登録します。戻り値は常に結果の配列です。Lua integerにはbigint、floatにはnumber、byte stringにはUint8Array、テーブルには`luaTable`または明示的なentry listを使用します。同期queryへPromiseを返すことはできません。
 
-`onLog(record)`でprint/debug.logをコンソールやIDEへ接続できます。recordはsourceとbytesを持ち、Luaの実行が戻った後に配送されます。手動処理には`drainLogRecords`／`flushLogs`もあります。
+`debug.log`はgame/extendedで利用でき、`print`はextended専用です。`onLog(record)`は公開関数を追加せず、ログをコンソールやIDEへ接続します。recordはsourceとbytesを持ち、Luaの実行が戻った後に配送されます。手動処理には`drainLogRecords`／`flushLogs`もあります。
 
 HTTPは`drainHttpRequests`からhostへ渡され、hostが実通信を行ってから`httpReply(token, bytes)`または`cancelHttp(token)`を呼びます。自動で外部へ通信しません。
 
@@ -43,4 +45,10 @@ load/tick/draw/start/resumeはcompleted/suspended/missingを返し、エラー�
 
 npm registryまたはGitHub Releasesのtarballからインストールできます。runtime npm依存はありません。ブラウザごとの制約、全server APIのホスト実装、ゲームのsave XML直接互換は含まれません。
 
-詳しい利用ガイド・検証範囲・そのまま実行できるNode/Rust例は、ソースリポジトリ`Stormcat-Works/storm-lua-engine`の`docs/guide/`と`examples/`にあります。MIT License。描画構成要素と外部依存の権利表示は同梱のSCREEN_COMPONENTS_LICENSE、THIRD_PARTY_LICENSES.txt、TOOLCHAIN_LICENSES.txt、RUST_STD_LICENSES.htmlを参照してください。
+利用者向けの正本は[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)です。契約・検証・Node/Rustの実行例はソースリポジトリに残します。MIT License。描画構成要素と外部依存の権利表示は同梱のSCREEN_COMPONENTS_LICENSE、THIRD_PARTY_LICENSES.txt、TOOLCHAIN_LICENSES.txt、RUST_STD_LICENSES.htmlを参照してください。
+
+## 名前付きソースと再初期化
+
+v0.2.0の`requireLoader`はextended専用です。ホストが同期で`{source,name}`を供給し、SDKが同じVMの継続で実行します。include-onceで戻り値を捨てる方式であり、Lua標準のmodule requireや静的buildとは別です。任意ファイルアクセスや再入は許可しません。
+
+Vehicleのloadは別チャンクの追加実行です。resetは正常完了した全loadを再実行し、required modulesのキャッシュも再作成します。Addonのloadは初回だけとし、開発用モジュールはrequireLoader経由で利用します。詳しくは[ソース読み込み](https://docs.makkii.jp/storm-lua-engine/source-loading)を参照してください。

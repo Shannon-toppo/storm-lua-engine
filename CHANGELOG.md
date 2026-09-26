@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.2.0 — Unreleased
+
+この版はリリース準備中です。以下を一つの公開版へまとめます。タグ・npm公開・本番配備は別の明示操作です。
+
+### 追加
+
+- Vehicle向けCompiler SDKを責務別クレートと`/compiler`へ統合。解析、lint、静的リンク、minify、プロパティ走査、独立したコンパイラWASMを提供。
+- ホスト所有のWorkerへ接続する`/compiler-worker`アダプタ。
+- 任意のホスト値・同期関数を高レベルAPIから追加・置換する`bindings`。
+- extended専用の`requireLoader`。ホストが供給するテキストを別名付きチャンクとして共有環境で実行し、include-once・戻り値破棄・入れ子・ファイル単位のデバッグに対応。
+- `app/`にStorm Lua Engine: PlaygroundのCLI/Webと静的配信Worker設定を追加。Storm MinのCLI/Webと併存。
+
+### 非互換・挙動の変更
+
+- 既定をgame環境へ変更。debug.logは利用可能で、pcall/xpcall/error/print/assert/グローバルunpackはextendedへ分離。onLogは公開関数を増やさない。
+- Vehicleのresetは最後のソースだけでなく、正常完了した全loadを順に再実行。失敗・未完了のloadは履歴に入れず、履歴を128件/8MiBに制限。
+- 単一ソースとプロジェクトの環境診断を統一。未知・廃止のパスIDはfalse指定でも拒否。
+- general-expression-factoring、repeated-expression-factoring、scalar-vector-loop-synthesis、redundant-nil-fallback-eliminationを撤去。
+- 独立Addon Labを削除し、SDK確認をPlaygroundへ移行。仮物理/3Dワールドは移さない。
+
+### 修正
+
+- ソースに代入のない外部グローバルを短名またはnilへ変換しない。
+- 動的_ENV・拡張環境・ホスト置換は、トークンと行位置を保持する字句短縮へ切り替え、conservative-minificationで通知。
+- クロージャに捕捉されたproperty/inputの値を後から再取得する変換を防止。
+- 不正な元ソースを公開finalizerへ渡した場合のpanicを診断へ変更。
+- 非公開fixtureの生成を通常コンパイラビルドから分離。
+
+### ドキュメントと配布
+
+- 利用者向けガイド本文を[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)へ移設。リポジトリには契約・設計・検証・公開手順と実行可能な例を維持。
+- Rust workspace、npm SDK、Playgroundを0.2.0に統一。savedata形式、描画命令ABI、Composite I/Oレイアウトは変更しない。
+
+
 ## 0.1.0 — 2026-09-26
 
 Storm Lua Engineの初回リリース。

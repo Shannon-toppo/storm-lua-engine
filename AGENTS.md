@@ -10,7 +10,7 @@
 - 製品からconformance/xtaskへ依存しない。描画専用経路はmlua、Lua処理系、DOM、GPU、HTTPへ依存しない。
 - WASM境界は変換・所有権・呼び出しのみを担当し、ゲームの描画式やLua API規則を再実装しない。
 - vehicleとaddonは別profile・別API型。server関数や地形データはhostが明示提供し、未提供を成功stubで埋めない。
-- 利用側の手順はdocs/guideに配置し、公開した例を独立consumerで実行検証する。内部設計や開発ゲートとは分離する。
+- 利用者向けガイドの本文はdocs.makkii.jpのstorm-lua-engine配下で管理する。docs/guideは移設先への案内だけを保持し、契約・設計・検証・release手順は本リポに残す。公開例は本リポの独立consumerで実行検証する。
 - 公開APIを一括re-exportしない。mlua型へのアクセスはVMの明示的な`backend-mlua`機能に限定し、通常のAPIとは分ける。
 - クレート数、LOC、関数数を目的に分割しない。利用条件と独立検証可能な意味論で決める。
 

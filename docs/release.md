@@ -4,6 +4,8 @@
 
 ## 版と契約の確認
 
+現在の準備版は**0.2.0**です。未pushのCompiler SDK・環境修正・Playground・開発用source loaderとload履歴を、この版へ集約します。公開実行前に[0.2.0確認記録](verification/source-loading-20260927.md)とCHANGELOGを確認します。
+
 Cargo workspaceと`packages/lua-engine/package.json`の版を揃え、`CHANGELOG.md`へ利用者に影響する変更を書きます。タグは`v<version>`とします。公開済みのタグやnpmの同じ版を差し替えず、修正は新しい版として出します。
 
 公開API、WASM ABI、描画命令、savedata/checkpoint、Playgroundのproject形式に非互換変更があるか確認します。形式を変える場合は版とreject条件、往復テストを同時に更新し、予定している非互換変更を分散したリリースへ持ち越しません。初版0.1.0では採用済みの画面731ケース、数値規則、保存形式を変更していません。
@@ -36,7 +38,7 @@ GitHub Releasesには検査したnpm tarball、Playgroundの静的サイトZIP�
 
 ## Compiler assets on the integration branch
 
-A release containing the compiler subpath must additionally run `node tools/build-compiler.mjs`, `npm --prefix packages/lua-engine run test:compiler` and `node tools/test-compiler-browser.mjs`. Build compiler assets before the full package gate. The isolated installed consumer exercises both compiler and runtime together, including property snapshot preservation. Do not reuse the published 0.1.0 number for this expanded SDK; select a new version as an explicit release action.
+A release containing the compiler subpath must additionally run `node tools/build-compiler.mjs`, `npm --prefix packages/lua-engine run test:compiler` and `node tools/test-compiler-browser.mjs`. Build compiler assets before the full package gate. The isolated installed consumer exercises both compiler and runtime together, including property snapshot preservation. The expanded SDK is prepared as 0.2.0; publishing still requires an explicit release action.
 
 ## Playgroundの配布
 
@@ -47,3 +49,9 @@ Addon Labの現在のソース・CI参照は撤去済みです。過去版Releas
 ## 環境契約変更の公開ゲート
 
 環境プロファイル対応版は、既定のpcall/error/print等、onLogの副作用、コンパイラ診断、外部名と_ENVの扱いを変更します。新しい版で公開し、0.1.0を差し替えません。gameとextendedの同じ条件でNative/WASMを検査し、compiler-workerとホストbindingsを梱包済みconsumerから実行します。既存利用者にはextendedの明示指定と、必要なcompiler側hostBindingsの指定を案内します。
+
+## 公開資料の正本
+
+利用ガイドはdocs.makkii.jpのstorm-lua-engine配下に移しました。本リポジトリのdocs/guideは移設先だけを示し、本文を複製しません。契約・設計・検証・リリース手順とconsumerコードは本リポで検査します。
+
+公開時はSDKパッケージ、ガイド、Playgroundを対応版で配備し、ブログ下書きのdraft解除はその公開状態を確認してから行います。npm publish・Worker配備・ブログ公開を、通常のコードcommitと同一視しません。

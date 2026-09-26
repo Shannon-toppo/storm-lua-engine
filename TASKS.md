@@ -1,5 +1,8 @@
 # Implementation tasks
 
+v0.2.0準備: E3のsource loader、E4のVehicle load履歴再実行、利用者向けガイドの移設とブログ下書きを実施。未完了は明示的なrelease/push/deployと、Phys Simなど個別ホスト側の採用です。os.clock専用ガイドやmap実装は今回追加しません。詳細は[現在地](STATUS.md)。
+
+
 現状と検証結果は[STATUS](STATUS.md)、[API](docs/specs/api.md)、[verification](docs/verification/release-0.1.0.md)。完了と未検証を分離する。
 
 ## Completed implementation

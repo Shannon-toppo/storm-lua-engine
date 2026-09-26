@@ -27,3 +27,7 @@ TSとWASMをbuildした後、リポジトリルートから`python3 -m http.serv
 [Native addon host](../conformance/examples/addon_host.rs)はRustのserver callback、ログ、保存・復元、map providerを示す。`cargo run -p storm-lua-conformance --example addon_host --locked`で実行できる。conformanceは例の起動用targetであり、製品側から依存するcrateではない。
 
 例に含む地図・プレイヤー・HTTP replyはテストホストが明示的に用意したデータであり、ゲーム環境が無い場合のengine fallbackではない。詳細は[consumer guides](../docs/guide/getting-started.md)。
+
+## 開発用の名前付きソース
+
+[source-loading.mjs](consumer/source-loading.mjs)はインストール済みSDKだけを利用し、require先のブレークポイントと前置き・本体・後置きのresetを確認します。`node tools/test-package.mjs`も同じ例を隔離consumerで実行します。利用手順は[ソースガイド](https://docs.makkii.jp/storm-lua-engine/source-loading)を正本とします。

@@ -2,9 +2,9 @@
 
 ## 利用するアプリケーションを開発する
 
-[インストール・初期化](guide/getting-started.md) · [Addon](guide/addons.md) · [地図・ログ・HTTP](guide/host-services.md) · [利用側API](guide/api-reference.md) · [実行例](../examples/README.md)
+利用者向けガイドの本文は[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)を正本とします。[導入](https://docs.makkii.jp/storm-lua-engine/getting-started)、[コンパイラ](https://docs.makkii.jp/storm-lua-engine/compiler)、[ソース読み込み](https://docs.makkii.jp/storm-lua-engine/source-loading)、[環境](https://docs.makkii.jp/storm-lua-engine/environments)、[API一覧](https://docs.makkii.jp/storm-lua-engine/api-reference)、[Playground](https://docs.makkii.jp/storm-lua-engine/playground)。
 
-[環境とホスト拡張](guide/environments.md) · [環境仕様](specs/environments.md) · [Compiler SDK（開発ブランチ）](guide/compiler.md) · [統合検証](verification/compiler-integration-20260926.md) · [環境修正の検証](verification/environment-contract-20260926.md) · [Playgroundの操作](../app/README.md) · [Playgroundの検証](verification/playground-20260926.md)
+本リポジトリには[実行可能な例](../examples/README.md)、[環境契約](specs/environments.md)、[ソース読み込み契約](specs/source-loading.md)、[Playground開発手順](../app/README.md)、検証記録とrelease手順を維持します。docs/guideのファイルは旧リンクからの移設案内です。
 
 ## エンジンを開発・検証する
 

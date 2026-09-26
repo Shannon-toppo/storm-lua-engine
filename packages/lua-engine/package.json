@@ -1,8 +1,8 @@
 {
   "name": "@stormcat-works/storm-lua-engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "Embeddable Stormworks vehicle/addon Lua runtime with screen rasterization and host services",
+  "description": "Stormworks Lua runtime, screen rasterization, Vehicle compiler and explicit host services",
   "license": "MIT",
   "files": [
     "dist",
@@ -71,7 +71,7 @@
     "url": "git+https://github.com/Stormcat-Works/storm-lua-engine.git",
     "directory": "packages/lua-engine"
   },
-  "homepage": "https://github.com/Stormcat-Works/storm-lua-engine#readme",
+  "homepage": "https://docs.makkii.jp/storm-lua-engine/index",
   "bugs": {
     "url": "https://github.com/Stormcat-Works/storm-lua-engine/issues"
   },

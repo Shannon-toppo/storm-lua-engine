@@ -1,6 +1,6 @@
 {
   "name": "@stormcat-works/storm-lua-playground",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Storm Lua Engine: Playground — SDK機能の操作・確認用アプリ",
@@ -16,10 +16,18 @@
     "deploy:dry-run": "wrangler deploy --dry-run --config wrangler.jsonc",
     "deploy": "wrangler deploy --config wrangler.jsonc"
   },
-  "dependencies": {"@stormcat-works/storm-lua-engine": "file:../packages/lua-engine"},
-  "devDependencies": {
-    "vite": "8.3.1", "tsx": "4.23.15", "typescript": "5.8.3",
-    "@types/node": "22.15.30", "playwright": "1.62.1", "wrangler": "4.118.0"
+  "dependencies": {
+    "@stormcat-works/storm-lua-engine": "file:../packages/lua-engine"
   },
-  "engines": {"node": ">=22.18"}
+  "devDependencies": {
+    "vite": "8.3.1",
+    "tsx": "4.23.15",
+    "typescript": "5.8.3",
+    "@types/node": "22.15.30",
+    "playwright": "1.62.1",
+    "wrangler": "4.118.0"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
 }

@@ -1,6 +1,6 @@
 # Storm Lua Engine
 
-**開発ブランチ:** Vehicle向けの解析・リンク・minifyとcompiler-only WASMを追加しました。[Compiler guide](docs/guide/compiler.md)を参照してください。公開済み0.1.0へ含まれるという意味ではありません。
+**v0.2.0 リリース準備中。** Compiler SDK、環境プロファイル、開発用require、Playgroundを含みます。マニフェスト更新は公開を意味しません。[利用ガイド](https://docs.makkii.jp/storm-lua-engine/index)と[変更点](CHANGELOG.md)を参照してください。
 
 **StormworksのLuaを、あなたのアプリケーションで動かす。**
 
@@ -18,7 +18,7 @@ TypeScript／JavaScript: `npm install @stormcat-works/storm-lua-engine`
 
 実行用・描画専用WASM、型定義、フォントを同梱しています。利用するだけならRustやEmscriptenは不要です。[GitHub Releases](https://github.com/Stormcat-Works/storm-lua-engine/releases)ではnpm tarballと、そのまま配信できるAddon Labも配布します。
 
-Rust: 必要なクレートをGitタグで参照します。例えば`storm-lua-addon = { git = "https://github.com/Stormcat-Works/storm-lua-engine", tag = "v0.1.0" }`。詳しい設定は[導入ガイド](docs/guide/getting-started.md)を参照してください。
+Rust: 公開後は必要なクレートをGitタグで参照します。未公開時は同じcheckoutへのpath依存で確認します。例えば`storm-lua-addon = { git = "https://github.com/Stormcat-Works/storm-lua-engine", tag = "v0.2.0" }`。詳しい設定は[導入ガイド](docs/guide/getting-started.md)を参照してください。
 
 ## できること
 

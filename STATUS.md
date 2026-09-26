@@ -1,6 +1,14 @@
 # Current status
 
-2026-09-26 — **Storm Lua Engine 0.1.0**。ビークル／AddonのLua実行、CPU描画、デバッガとホストサービスを提供します。変更内容は[CHANGELOG](CHANGELOG.md)、配布方法は[導入ガイド](docs/guide/getting-started.md)を参照してください。
+2026-09-27 — **Storm Lua Engine 0.2.0（リリース準備中・未公開）**。既存の0.1.0から、Compiler SDK、game/extended、ホストbindings、Playground、開発用ソース読み込みをまとめています。公開・配備は明示的な別操作です。[CHANGELOG](CHANGELOG.md)・[利用ガイド](https://docs.makkii.jp/storm-lua-engine/index)。
+
+## 開発用requireとload履歴（E3/E4）
+
+高レベルRust/TypeScript/WASMにrequireLoaderを追加。hostはソースとchunk名だけを返し、Luaの同じ継続でinclude-once実行します。戻り値破棄・共有global・別local・循環・元ファイルでの停止/resumeに対応し、命令予算をリセットしません。
+
+Vehicle resetは正常完了した全loadを順に再実行。失敗/未完了loadは履歴から除外し、履歴上限を適用します。Addonは初回loadのlifecycleを保ち、必要な開発チャンクをrequireで扱います。[契約](docs/specs/source-loading.md)・[検証](docs/verification/source-loading-20260927.md)。
+
+利用ガイド6本の本文をdocs.makkii.jp側へ移し、本リポには案内・契約・設計・検証・実行例を維持します。公開資料とブログは対応するローカルブランチの原稿段階です。
 
 ## 環境契約の是正（開発ブランチ）
 
@@ -16,7 +24,7 @@ Engine native 445件、利用側回帰492件、Node/WASM/3ブラウザ、隔離n
 
 ## Storm Lua Engine: Playground（実装・検証済み、未配備）
 
-Storm Minとは併存するSDK確認用CLI/Webを`app/`へ実装しました。12確認例、共通操作runner、独立compiler/runtime Worker、入力/結果保存、version付き入出力、明示中断に対応します。ホスト・HTTP・地図は明示テスト入力であり、実通信や仮物理は持ちません。
+Storm Minとは併存するSDK確認用CLI/Webを`app/`へ実装しました。13確認例、共通操作runner、独立compiler/runtime Worker、入力/結果保存、version付き入出力、明示中断に対応します。ホスト・HTTP・地図は明示テスト入力であり、実通信や仮物理は持ちません。
 
 Addon LabとThree.js/CodeMirrorのアプリ依存は撤去し、SDK確認はPlaygroundへ移しました。`app/wrangler.jsonc`は専用routeを持ち、dry-runまで確認。本番公開・SDKバージョン更新・pushは未実施。[操作](app/README.md)・[Playground検証](docs/verification/playground-20260926.md)。
 
