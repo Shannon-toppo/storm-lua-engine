@@ -37,3 +37,9 @@ GitHub Releasesには検査したnpm tarball、Addon Labの静的サイトZIP、
 ## Compiler assets on the integration branch
 
 A release containing the compiler subpath must additionally run `node tools/build-compiler.mjs`, `npm --prefix packages/lua-engine run test:compiler` and `node tools/test-compiler-browser.mjs`. Build compiler assets before the full package gate. The isolated installed consumer exercises both compiler and runtime together, including property snapshot preservation. Do not reuse the published 0.1.0 number for this expanded SDK; select a new version as an explicit release action.
+
+## Playgroundの配布への切り替え（未実施）
+
+[Playground設計](design/playground.md)に従い、Addon LabのSDK確認部分を`app/`へ移行する。移行完了時に上記Labのビルド・テスト・静的ZIP・通知の参照をPlaygroundへ更新する。現在のアプリとCIはまだLabを使っているため、先に検証手順だけを削除しない。過去版のRelease資産は書き換えない。
+
+PlaygroundのCLI/Webとmakkii.jp公開用Cloudflare Workerは`app/`で管理し、ルートへ専用設定を増やさない。Storm Minの製品・Worker・routeは維持する。正式route・版・権利表示・保存形式を確認してから公開し、設計の採用だけで配備を実行しない。

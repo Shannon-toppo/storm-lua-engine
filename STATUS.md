@@ -10,7 +10,11 @@
 
 Engine native 445件、利用側回帰492件、Node/WASM/3ブラウザ、隔離npm consumerで確認。131入力×685条件の出力は従来版と同一で、Native/Engine-WASMも685組一致。詳細は[統合検証](docs/verification/compiler-integration-20260926.md)、使い方は[Compiler guide](docs/guide/compiler.md)。
 
-公式CLI/WebのEngineリポジトリへの移設、makkii.jp配備、Addon最適化、リリースと版の更新は未実施。[目標設計](docs/design/compiler-sdk.md)の全項目を完了したとはしない。
+## Storm Lua Engine: Playground（方針確定・未実装）
+
+Storm Minの既存CLI/Webとは併存する。PlaygroundはSDKの全公開機能を試すことだけを目的にし、`app/cli/`・`app/web/`へ配置する。makkii.jp公開用Cloudflare Workerも`app/`で管理する。Addon Labは必要なSDK確認部分とテストを移行後、旧アプリと不要な仮物理・3Dワールドを削除する。
+
+現在の`app/`は設計への入口のみ。Playgroundのアプリ実装、Addon Lab移行・削除、makkii.jp配備は未完了。[Playground設計](docs/design/playground.md)と[ADR 0006](docs/adr/0006-playground-coexistence.md)を参照する。Addon最適化、公開版の更新も別の未完了項目。
 
 ## v0.1.0の実装済み範囲
 

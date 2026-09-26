@@ -2,7 +2,7 @@
 
 記録日: 2026-09-26。基準: Storm Lua Engine v0.1.0。
 
-**初回のSDK移管・既存ホスト接続を実装済み、未公開。** 本文は全体の目標設計。実装済みの入口は[Compiler guide](../guide/compiler.md)、実行した検証と残件は[統合検証](../verification/compiler-integration-20260926.md)を参照。公式CLI/Webの移設など未完了段階も含むため、本文の全提案を完了扱いしない。現在の契約は[Architecture](architecture.md)と[利用側API](../guide/api-reference.md)、採用判断は[ADR 0005](../adr/0005-compiler-sdk-integration.md)を参照する。
+**初回のSDK移管・既存ホスト接続を実装済み、未公開。** 本文は全体の目標設計。実装済みの入口は[Compiler guide](../guide/compiler.md)、実行した検証と残件は[統合検証](../verification/compiler-integration-20260926.md)を参照。Playgroundの追加・Addon Labの移行など未完了段階も含むため、本文の全提案を完了扱いしない。現在の契約は[Architecture](architecture.md)と[利用側API](../guide/api-reference.md)、言語処理移管の採用判断は[ADR 0005](../adr/0005-compiler-sdk-integration.md)、Storm Minとの併存とPlaygroundは[ADR 0006](../adr/0006-playground-coexistence.md)を参照する。
 
 ## 1. 決定範囲
 
@@ -12,10 +12,11 @@
 | 合意した内部境界 | `stormmin-*`クレートをそのまま持ち込まない。Engine側に責務名を持つ新規クレートを設け、旧coreを巨大な新coreへ改名するだけの移行にしない |
 | 合意した対応範囲 | 最適化は当面Vehicleのみ。将来Addonへ拡張するが、現在のAddon実行対応と同一視しない |
 | 必須の品質条件 | 不具合・意味保存条件の不足によるデフォルト無効パスは、削除または根本修正で解消する。無効のまま移植して完了としない |
-| 最新の提案・推奨 | Engineリポジトリ内に公式CLIとWebフロントエンドを置き、Webの静的成果物をmakkii.jpで公開する |
-| 未確定 | CLI名・npm配布単位・Webの正式URL・ブランド名・既存Storm Min配布の終了方針・詳細API名 |
+| 合意したフロントエンド | Storm MinのCLI/Webを維持し、SDK全機能の確認用にStorm Lua Engine: Playgroundを追加する。CLI/Webとmakkii.jp公開用Workerは`app/`配下で管理する |
+| 合意したサンプル整理 | Addon Labの必要なSDK接続・確認をPlaygroundへ移行し、旧アプリと不要な仮物理・3Dワールドを削除する |
+| 未確定 | PlaygroundのCLI実行ファイル名・配布単位・Webの正式URL・公開Workerのroute・次の公開版。Storm Minの廃止は行わない |
 
-この設計文書の追加は、実装着手、既存機能の削除、パッケージ公開、本番デプロイ、研究タスクの移管を実施するものではない。
+設計の採用と実装・公開の完了は区別する。初回SDK移管と4パス撤去は検証済み。Playground、Addon Lab移行、本番配備は未完了であり、この文書で研究タスクや公開設定を変更しない。
 
 ## 2. 製品と所有者
 
@@ -23,15 +24,16 @@ Engineは「Stormworks向けLuaを解析・構築・最適化し、ホストの�
 
 ソース処理はLuaを実行せずに利用できる。実行系はコンパイラを通さず、単一Luaソースを直接ロードできる。描画専用経路は引き続きLua VMを必要としない。
 
-公式CLI/WebもSDKの利用者として扱う。同じリポジトリに置くが、ライブラリはCLI/Webへ依存しない。minify、lint、リンク、文字数計測、候補の採否、描画式をフロントエンドへ複製しない。
+PlaygroundのCLI/WebもSDKの利用者として扱う。同じリポジトリの`app/`に置くが、ライブラリはアプリへ依存しない。minify、lint、リンク、文字数計測、候補の採否、描画式をフロントエンドへ複製しない。
 
-Storm Minは共通アルゴリズムの所有者ではなく、専用の利用者向け入口として存続できる。公式フロントエンドをEngine側へ集約する場合、同じCLI/Webを旧リポジトリでも独立開発し続けない。旧側に追加コーパスと研究資産だけが残る構成も許容し、役割やコード量を維持するための機能追加はしない。
+Storm Minは短縮専用の既存CLI/Webと非公開回帰を維持する。PlaygroundはEngine全体のSDK機能を試す別アプリであり、Storm Minの移設・廃止・改名ではない。同じSDK機能を両アプリが利用してよい。一本化するのは共通アルゴリズムと汎用接続処理で、用途の異なるフロントエンド自体ではない。
 
 ## 3. 想定consumer
 
 | Consumer | SDKの利用 | ホストが所有するもの |
 |---|---|---|
-| CLI・短縮Webツール | analyze、build、minify、診断、文字数・探索結果 | 入出力、コマンド、設定選択、表示、保存・コピー |
+| Storm MinのCLI/Web | analyze、build、minify、診断、文字数・探索結果 | 短縮用の入出力、コマンド、設定選択、表示、保存・コピー |
+| Storm Lua Engine: Playground | 全公開SDK機能を操作・確認する | 最小の入力・出力、実行操作、明示テストホスト。独立したIDEやワールドを作らない |
 | Lua IDE | 編集中の診断、非短縮ビルド、実行・debug、最適化エクスポート | エディタ、VFS、未保存バッファ、実行操作、診断表示 |
 | ビークルシミュレータ | マイコンごとのVM、I/O、描画。必要なら出力時にbuild/minify | ビークル・配線・物理・ワールド・実行順序 |
 | 画像からLuaを生成するツール | raster、生成Luaの実行確認、minify | 画像の取得・変換、画像生成側の探索 |
@@ -89,11 +91,11 @@ IDEでは原文を解析し、非短縮でリンクした成果物を実行し�
 
 APIカタログは共有する事実データであり、pure・不変・省略可能という証明そのものではない。shadowing、再代入、評価順序、例外、閉包、fresh allocationの条件は解析・最適化側が検査する。ゲーム互換API、ホスト拡張、未検証のゲーム挙動を混ぜない。
 
-## 6. クレートの分割案
+## 6. クレートの責務
 
-次は移行先の第一候補。クレート数ではなく利用条件と意味論の所有者で最終調整する。
+以下の4所有者と`storm-lua-compiler-wasm`は初回移管で実装済み。現在の依存は[Architecture](architecture.md)を参照する。
 
-| 新規所有者案 | 責務 | 依存方向の目安 |
+| 所有者 | 責務 | 依存方向 |
 |---|---|---|
 | `storm-lua-syntax` | lexer/parser、AST、source位置、Luaの印字基盤 | VM・minify・FSへ依存しない |
 | `storm-lua-analysis` | 名前解決、参照・副作用解析、論理入力の検査、lint・診断 | syntax、必要なspec。build/minifyへ逆依存しない |
@@ -104,41 +106,25 @@ APIカタログは共有する事実データであり、pure・不変・省略�
 
 既存VM、microcontroller、addon、rasterの所有範囲は維持する。最適化器のParserをLua VMのParserの代わりに使わない。通常のruntime-only利用がコンパイラを引かず、compiler-only利用がLua・rasterを必須にしないことを独立consumerで検証する。
 
-CLIやWASM用には、実際に呼び出す利用者がある境界だけ新規adapterを設ける。名前・置き場は未確定。移行のためだけにStorm Min側のクレートを増やさない。
+compiler WASMの境界は`storm-lua-compiler-wasm`が所有する。Playground CLIは`app/cli/`のアプリとし、SDKへ逆依存を作らない。移行のためだけにStorm Min側のクレートを増やさない。
 
 ## 7. Rust・WASM・Worker
 
 Rustは必要なクレートを直接呼び、CLI、JSON、C ABIを経由することを要求しない。WASMはruntime・raster・compilerの実行単位を分離する。クレートごとにWASMを作る必要はなく、当初のcompiler WASMは一つでよい。
 
-TSでは`/compiler`等の機能別入口を提案する。コンパイラ用loaderはVMを初期化せず、runtime-onlyのimportはcompiler WASMを取得・生成しない。各moduleのmemoryを混ぜず、生成Lua等の所有データで接続する。
+TSの`/compiler`入口は実装済み。コンパイラ用loaderはVMを初期化せず、runtime-onlyのimportはcompiler WASMを取得・生成しない。各moduleのmemoryを混ぜず、生成Lua等の所有データで接続する。
 
 ブラウザでは重いcompileをUIスレッドから分離する。SDKは明示作成するWorkerクライアント、必要な候補評価・転送アダプタを提供できる。開始・中断・破棄、同時ジョブ数、古い解析結果の採用拒否はホストが管理し、importだけでWorkerやタイマーを起動しない。Node/制約下の逐次経路も明示的な利用形態として扱う。
 
 一つのnpmパッケージへの同梱と、ブラウザでの遅延ロードは別。入口を分けてもtarballの容量が減るとは説明しない。公式Webのアプリ資産・フレームワークをSDKパッケージへ無条件に同梱しない。
 
-## 8. 公式CLI・Webを同居させる提案
+## 8. Storm Lua Engine: Playground
 
-**評価: 推奨。** ライブラリ境界を維持した実製品を同じリポジトリで開発すれば、SDKの使いにくさを早く検出できる。ただし、以下は最新の提案であり、製品名・URL・公開手順まで決定済みではない。
+名称、Storm Minとの併存、`app/cli/`・`app/web/`・公開用Workerの`app/`管理を採用した。目的はSDKの全機能を試し、できることを確認することだけとする。詳細な範囲・配置・完了条件は[Playground設計](playground.md)、判断理由は[ADR 0006](../adr/0006-playground-coexistence.md)を正本とする。
 
-ソース配置の候補は`apps/cli`と`apps/web`。CLIがCargo packageであることと、ライブラリがCLIへ依存することは別である。アプリは公開SDK APIで動かし、内部ASTや私有fixtureに特権アクセスしなければ成立しないUIにしない。
+Addon Labは必要なSDK接続・確認ケースをPlaygroundへ移した後、独立アプリとして削除する。港、船、仮物理、3Dワールドをそのまま移すものではない。既存の小さな組み込み例とSDK conformanceは維持する。Storm MinのCLI/Webは移設・削除しない。
 
-| 入口 | 初期の役割 | 初期範囲に含めないもの |
-|---|---|---|
-| CLI | analyze/build/minify、stdin・ファイル入出力、診断・JSON結果、終了コード | 常駐ゲームサーバー、暗黙の任意Lua実行、独自最適化 |
-| Web | 単一/複数ソース入力、設定、lint結果、サイズ・差分、コピー・ダウンロード | 完全なIDE、共同編集、物理ワールド、アカウント必須のクラウド保存 |
-| 将来の実行確認 | 必要な利用者がある場合に限り、明示的なsandbox実行・簡易描画 | compileの隠れた副作用としての実行、暗黙の実HTTP通信 |
-
-既存の[Addon Lab](../../examples/addon-lab/README.md)はAddonホストの実行例であり、新しい短縮Webの実装済み根拠ではない。例を残すか導線を整理するかは後で決め、全面的なIDEをもう一つ作ることを統合要件にしない。
-
-### makkii.jpへの公開
-
-Engineでビルドした公式Webの静的成果物をmakkii.jpへ配備する案とする。JS/WASM/Worker/公開サンプルを静的配信し、利用者のLuaをcompile目的でサーバーへ送らない。Webサーバーに最適化APIを追加しない。
-
-URL・既存ルートの移行/終了・サイト側の配備単位は未確定。ホスト名をSDKへ固定せず、サブパス、Worker/WASMのasset URL、MIME/CSP、キャッシュ世代、loaderとの版一致を配備時に検査する。別パスへの試験配備で旧公開ページを勝手に上書きしない。
-
-Webの保存状態はアプリ側で単一正本を持ち、リロード復元とversion付きプロジェクト入出力を設計する。秘密設定やローカルUI配置と、共有するソース・設定を分ける。破壊的な保存形式/API変更は一つの移行リリースへ集約し、不要な旧形式変換や永続的な二重実装を追加しない。
-
-公式フロントエンドを集約する場合、Storm Minという名称をWebの表示名に残すか、旧配布を終了するかは別判断。旧側を厚く保つために同じUI/CLIを複製しない。CLI・Web・SDKは個別に梱包・検証できるようにし、自動publish/deployを統合の副作用として追加しない。
+Playgroundの実装とmakkii.jp公開は未完了。SDKの実行・解析機能を暗黙に呼ばず、必要な操作を明示させる。公開アプリ、公開用Cloudflare Worker、ブラウザ内Web WorkerをSDK自身の意味論と分離する。
 
 ## 9. デフォルト無効パスを残さない移行ゲート
 
@@ -177,9 +163,9 @@ raw呼び出し列、正規化後のDrawCommand、画素は異なる観測。命
 | B | syntax/analysis/minify/buildへの抽出と独立利用 | dependency gate、runtime-only/compiler-only/lint-onlyの独立consumer。機械的移動と意味変更を区別 |
 | C | 全既定無効パスの削除または根本修正 | §9全件の判定と証拠。無効のままSDK公開へ進めない |
 | D | Rust/TS公開入口とcompiler WASM/Worker | 実consumer、Native/WASM一致、不要runtime非ロード、位置・エラー契約 |
-| E（提案） | 公式CLI/Webとmakkii.jp配備経路 | CLI入出力、公開package consumer、Web保存/入出力、サブパス・Worker・asset・公開内容検査 |
-| F | 旧実装の重複撤去とリリース | 製品コード正本一つ、非公開回帰、性能差分、ライセンス、非互換一覧、明示的な公開判断 |
+| E | Storm Lua Engine: Playgroundを`app/`に追加し、Addon Labを整理・廃止 | 全SDK機能の操作/検証対応、必要なLabテストの移管、makkii.jp公開用Workerもapp管理。Storm MinのCLI/Webは維持 |
+| F | 共通実装の重複撤去とリリース | コンパイラ正本一つ、アプリは併存。非公開回帰、性能差分、ライセンス、非互換一覧、明示的な公開判断 |
 
 移行元で有用だった機能・テスト・ベンチを、統合しやすさだけで落とさない。機械的抽出は出力差分を検査し、修正・削除による意図的な差は別に報告する。不具合修正より過去の誤出力維持を優先せず、文字数退行や性能悪化も隠さない。
 
-本記録時点では、上表の実装・パス修正・新SDK配布・公式フロントエンド・本番公開は未実施である。
+初回SDK移管・4パス撤去・既存Storm Min接続と検証は完了。残る範囲は[TASKS](../../TASKS.md)と[Playground設計](playground.md)で追跡する。Playgroundの実装、Addon Labの削除、新SDKの公開、本番配備は未完了。過去の設計予定を実装済みAPIと混同しない。

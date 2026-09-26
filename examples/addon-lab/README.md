@@ -1,5 +1,7 @@
 # Addon Lab
 
+**移行予定:** SDK確認に必要な部分を`app/`の **Storm Lua Engine: Playground** へ整理し、本アプリは削除します。港・船・仮物理・3Dワールドは移行範囲に含めません。現在は未移行で、下記の起動手順は引き続き有効です。[移行条件](../../docs/design/playground.md)
+
 **Luaを編集して、TypeScriptのホストが動かす港のワールドで試すブラウザサンプル。**
 
 Three.jsの3D表示、CodeMirror 6のLuaエディタ、本物のAddon WASMを組み合わせています。仮のワールドはすべてこのサンプル内のTypeScriptが所有し、本体エンジンには追加していません。説明・コメント・UIは日本語です。

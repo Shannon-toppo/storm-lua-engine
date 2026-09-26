@@ -13,7 +13,9 @@
 | Document | Owns |
 |---|---|
 | [Architecture](design/architecture.md) | crate責務・依存方向・ホストとの境界 |
-| [Compiler SDK plan](design/compiler-sdk.md) | 未実装の言語処理統合設計・ホストAPI・公式CLI/Web提案・移行ゲート |
+| [Compiler SDK plan](design/compiler-sdk.md) | 言語処理統合の境界・移行ゲート。現在の実装はCompiler guideとSTATUSで区別 |
+| [Playground](design/playground.md) | SDK全機能を試すCLI/Web、app配置、公開Worker、Addon Lab移行の範囲 |
+| [Playground decision](adr/0006-playground-coexistence.md) | Storm Minとの併存とSDK確認専用アプリの採用理由 |
 | [Compiler integration decision](adr/0005-compiler-sdk-integration.md) | 言語処理移管の判断理由と保留事項 |
 | [API surface](specs/api.md) | 現在の公開API、今後の高/低レイヤーAPI |
 | [Numeric I/O](specs/numeric-io.md) | f32/f64の境界・チャネル・出力保持 |

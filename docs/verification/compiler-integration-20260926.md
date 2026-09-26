@@ -77,3 +77,7 @@ The package gate now rejects an exported compiler entry with a missing/invalid c
 Compilation supports Vehicle only; Addon compilation is rejected, while the existing Addon runtime remains supported. Normal compilation does not execute Lua, but it can consume CPU/memory, so host process/Worker resource policy still applies.
 
 This stage does not relocate the official CLI/Web application into this repository, deploy a page, publish npm/Rust assets, or merge the integration branch. It does not implement full optimized-source debugging or a new runtime-optimal search objective. Shared API-profile metadata reconciliation, public release/version selection, packaging of the eventual official frontend, and broader real-world admission remain explicit later work. No claim of complete correctness for all possible Lua programs or all actual-game states is made from finite tests.
+
+## Subsequent product decision — 2026-09-26
+
+The executed checks and implementation scope above remain the record of the first SDK integration. The later [Playground decision](../adr/0006-playground-coexistence.md) establishes coexistence: Storm Min keeps its CLI/Web, and Storm Lua Engine: Playground is a separate SDK demonstration app under `app/`. The earlier reference to relocating the official frontend is not the current work plan. Addon Lab, not Storm Min, is the application to consolidate into Playground. See the [current design](../design/playground.md); no Playground execution or deployment is claimed by the test results in this report.

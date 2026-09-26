@@ -31,10 +31,6 @@
 | P2 public structure | 仕様・採用済みfixtureの自己完結化、不要な元ソース/採取資料/抽出ツールの除去 | 731ケースの入力/期待値と同梱グリフを保持、外部cloneなしで直接/Lua両経路を検証 |
 | P2 release privacy | 配布WASMのビルドパス正規化と成果物検査 | 両targetの正規化、梱包後と静的サイトの再検査。結果はverificationに記録 |
 
-## Compiler SDK統合計画（未実装）
-
-[統合設計](docs/design/compiler-sdk.md)の段階A〜Fと完了条件を参照する。移行元の公開対象・既定無効パス・依存境界を棚卸しし、言語処理をEngine固有の新規所有者へ移す。欠陥由来の無効パスは削除または完全修正で解消する。CLI/Web同居とmakkii.jp公開は提案段階であり、実装・配備完了として数えない。
-
 ## Remaining work, not counted as completed
 
 | Priority | Task | Exit gate |
@@ -57,8 +53,17 @@ consumer向けの[Native differential example](conformance/examples/differential
 
 版と配布物の管理は[リリース手順](docs/release.md)に従います。ignore領域の調査資料や作業履歴を配布物へ含めず、必要なcopyright/許諾文を維持します。上の未完了事項は追加の検証・対応範囲であり、実装済み機能の利用条件と区別します。
 
-## Compiler integration stage
+## Compiler SDKとPlayground
 
-Implemented and tested: syntax/analysis/minify/build ownership, compiler-only WASM and TS subpath, an existing frontend's SDK connection, four-pass retirement, and the captured-initializer lifetime fix. Evidence is in [compiler verification](docs/verification/compiler-integration-20260926.md).
+初回のsyntax/analysis/minify/build移管、compiler-only WASM/TS入口、既存Storm Min接続、4パス撤去と追加修正は実装・検証済み。[統合検証](docs/verification/compiler-integration-20260926.md)を参照する。
 
-Remaining: official CLI/Web relocation and packaging, shared API-profile metadata reconciliation, Addon compilation, broader corpus admission, public revision/version selection and actual publication/deployment. The current source-map contract covers non-minified links, not full optimized debugging. Keep all these separate from the completed first SDK stage.
+| 作業 | 完了条件 | 状態 |
+| --- | --- | --- |
+| Storm Minとの併存・Playgroundの範囲とapp配置 | [Playground設計](docs/design/playground.md)・[ADR 0006](docs/adr/0006-playground-coexistence.md)に従う | 方針確定 |
+| `app/cli/`・`app/web/` | 全公開SDK機能と操作/実行例/テストの対応を確認。実行・解析・描画・debug・Addon・サービスを含め、未対応は明示 | 未実装 |
+| Addon Labの整理・廃止 | SDK確認部分と必要テストをappへ移管し、仮物理/3Dワールドと旧アプリ、旧CI/配布参照を撤去 | 未実施 |
+| makkii.jp向け公開用Worker | 設定と必要な配信処理をapp内で管理。サブパス・WASM/Worker・通知・版を検査し、Storm Minのrouteを維持 | 未実装・未配備 |
+| SDK公開前の追加整理 | API-profile照合、必要な全件回帰・性能測定、版・配布手順と公開ガイドの整合 | 残件 |
+| Addonコンパイラ・高度な最適化後debug等 | 独立の機能追加として設計・検証。Playground追加のために実装したことにしない | 将来対応 |
+
+Storm MinのCLI/WebをEngineへ移設・廃止する作業は行わない。PlaygroundへIDE、共同編集、クラウド同期、ゲーム世界のシミュレーションを追加しない。公開・配備は別の明示操作とする。

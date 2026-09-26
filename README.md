@@ -8,6 +8,10 @@ RustとTypeScript／WebAssembly向けの組み込みライブラリです。ビ�
 
 [はじめる](docs/guide/getting-started.md) · [Addonを組み込む](docs/guide/addons.md) · [ホスト機能とログ](docs/guide/host-services.md) · [APIリファレンス](docs/guide/api-reference.md) · [実行例](examples/README.md)
 
+## Playground（計画）
+
+**Storm Lua Engine: Playground**を`app/`に追加する方針です。Storm MinのCLI/Webは維持します。Addon Labの必要なSDK確認部分はPlaygroundへ移行後、旧アプリを削除します。現在は計画段階で、下記の既存例は引き続き実行できます。[範囲と移行条件](docs/design/playground.md)
+
 ## インストール
 
 TypeScript／JavaScript: `npm install @stormcat-works/storm-lua-engine`
