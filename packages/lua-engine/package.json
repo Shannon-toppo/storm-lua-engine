@@ -40,6 +40,10 @@
     "./canvas": {
       "types": "./dist/canvas.d.ts",
       "import": "./dist/canvas.js"
+    },
+    "./compiler": {
+      "types": "./dist/compiler.d.ts",
+      "import": "./dist/compiler.js"
     }
   },
   "scripts": {
@@ -47,7 +51,9 @@
     "test": "npm run build && npm run check:consumer && node --test tests/*.test.mjs",
     "prepack": "npm run build && node ../../tools/check-package.mjs",
     "test:browser": "node ../../tools/test-browser.mjs",
-    "check:consumer": "tsc -p tsconfig.consumer.json"
+    "check:consumer": "tsc -p tsconfig.consumer.json",
+    "build:compiler": "node ../../tools/build-compiler.mjs",
+    "test:compiler": "npm run build && node --test tests/wasm/compiler.test.mjs"
   },
   "devDependencies": {
     "typescript": "5.8.3",

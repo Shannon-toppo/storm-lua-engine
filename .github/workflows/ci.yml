@@ -37,6 +37,7 @@ jobs:
       - run: cargo clippy --workspace --locked -- -D warnings
       - run: cargo run -p storm-lua-conformance --example microcontroller --locked
       - run: cargo run -p storm-lua-conformance --example differential --locked
+      - run: cargo run -p storm-lua-conformance --example compiler --locked
       - run: cargo run -p storm-lua-conformance --example addon_host --locked
       - run: cargo test --workspace --all-features --locked
       - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
@@ -72,13 +73,18 @@ jobs:
       - run: npm --prefix packages/lua-engine test
       - run: python3 tools/check_screen_fixtures.py
       - run: python3 tools/generate-toolchain-licenses.py --check
+      - name: Install compiler artifact builder
+        run: cargo install wasm-pack --version 0.13.1 --locked
       - run: node tools/build-wasm.mjs --with-tests
+      - run: node tools/build-compiler.mjs
+      - run: npm --prefix packages/lua-engine run test:compiler
       - run: node tools/check-package.mjs
       - run: node tools/test-wasm.mjs --with-tests
       - name: Install browser engines
         working-directory: packages/lua-engine
         run: npx playwright install --with-deps chromium firefox webkit
       - run: node tools/test-browser.mjs
+      - run: node tools/test-compiler-browser.mjs
       - run: node tools/test-package.mjs
       - name: Package content inspection (no publish)
         working-directory: packages/lua-engine

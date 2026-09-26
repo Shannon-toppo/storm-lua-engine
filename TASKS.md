@@ -56,3 +56,9 @@ consumer向けの[Native differential example](conformance/examples/differential
 ## リリース管理
 
 版と配布物の管理は[リリース手順](docs/release.md)に従います。ignore領域の調査資料や作業履歴を配布物へ含めず、必要なcopyright/許諾文を維持します。上の未完了事項は追加の検証・対応範囲であり、実装済み機能の利用条件と区別します。
+
+## Compiler integration stage
+
+Implemented and tested: syntax/analysis/minify/build ownership, compiler-only WASM and TS subpath, an existing frontend's SDK connection, four-pass retirement, and the captured-initializer lifetime fix. Evidence is in [compiler verification](docs/verification/compiler-integration-20260926.md).
+
+Remaining: official CLI/Web relocation and packaging, shared API-profile metadata reconciliation, Addon compilation, broader corpus admission, public revision/version selection and actual publication/deployment. The current source-map contract covers non-minified links, not full optimized debugging. Keep all these separate from the completed first SDK stage.

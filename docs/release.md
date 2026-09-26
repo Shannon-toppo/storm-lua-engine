@@ -33,3 +33,7 @@ GitHub Releasesには検査したnpm tarball、Addon Labの静的サイトZIP、
 ## ブランチ
 
 `main`は公開する版、`develop`は次の変更を管理します。初回公開ではレビュー済みtreeを親なしの1commitにまとめ、そのcommitから`develop`を作成します。公開対象でない開発履歴の復旧用bundleはローカルだけに保存し、公開refやReleaseには含めません。以後の通常リリースで初期化や履歴の作り直しを繰り返しません。
+
+## Compiler assets on the integration branch
+
+A release containing the compiler subpath must additionally run `node tools/build-compiler.mjs`, `npm --prefix packages/lua-engine run test:compiler` and `node tools/test-compiler-browser.mjs`. Build compiler assets before the full package gate. The isolated installed consumer exercises both compiler and runtime together, including property snapshot preservation. Do not reuse the published 0.1.0 number for this expanded SDK; select a new version as an explicit release action.

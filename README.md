@@ -1,5 +1,7 @@
 # Storm Lua Engine
 
+**開発ブランチ:** Vehicle向けの解析・リンク・minifyとcompiler-only WASMを追加しました。[Compiler guide](docs/guide/compiler.md)を参照してください。公開済み0.1.0へ含まれるという意味ではありません。
+
 **StormworksのLuaを、あなたのアプリケーションで動かす。**
 
 RustとTypeScript／WebAssembly向けの組み込みライブラリです。ビークルLua、アドオンLua、画素単位の描画、デバッグを共有しながら、UI・ワールド・通信・実行タイミングは利用するアプリケーションが管理できます。

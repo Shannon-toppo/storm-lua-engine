@@ -35,6 +35,9 @@ export async function checkPackage(directory) {
     const bytes = await readFile(join(directory, 'dist/wasm', name));
     if (!WebAssembly.validate(bytes)) throw new Error(`Invalid WASM: ${name}`);
   }
+  const compiler = await readFile(join(directory, 'dist/compiler-wasm/compiler_bg.wasm'));
+  if (!WebAssembly.validate(compiler)) throw new Error('Invalid WASM: compiler_bg.wasm');
+  if (!(await readFile(join(directory, 'dist/compiler-wasm/compiler.js'))).length) throw new Error('Missing compiler loader');
   if (!(await readFile(join(directory, 'dist/wasm/storm_lua_wasm.js'))).length) throw new Error('Missing runtime loader');
   const files = await readdir(join(directory, 'dist'), {recursive: true, withFileTypes: true});
   for (const entry of files) {

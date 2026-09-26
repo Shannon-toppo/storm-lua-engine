@@ -2,9 +2,15 @@
 
 2026-09-26 — **Storm Lua Engine 0.1.0**。ビークル／AddonのLua実行、CPU描画、デバッガとホストサービスを提供します。変更内容は[CHANGELOG](CHANGELOG.md)、配布方法は[導入ガイド](docs/guide/getting-started.md)を参照してください。
 
-## 次期設計（未実装）
+## Compiler SDK統合（実装済み・未公開）
 
-[Compiler SDK統合設計](docs/design/compiler-sdk.md)と[ADR 0005](docs/adr/0005-compiler-sdk-integration.md)を記録した。言語処理を責務別の新規クレートへ移し、runtimeとは独立利用する方針。公式CLI/Webとmakkii.jp静的公開は追加提案。既定無効パスは削除または根本修正が必須。現時点では新API・クレート・パス修正・フロントエンド実装・配備を行っていない。
+構文・解析・最適化・ビルドの4クレートとcompiler-only WASM adapterを追加した。既存のCLI/Node/Webは同じ実装を利用する。`/compiler`のTypeScript入口はruntimeをロードしない。最適化はVehicleのみ、Addon指定は明示拒否する。
+
+既定無効4パスを削除し、廃止IDは全入口で拒否する。生成コードの直接確認で見つかったcaptured property/inputの寿命変更と、公開finalizerの不正ソース時panicも修正した。
+
+Engine native 445件、利用側回帰492件、Node/WASM/3ブラウザ、隔離npm consumerで確認。131入力×685条件の出力は従来版と同一で、Native/Engine-WASMも685組一致。詳細は[統合検証](docs/verification/compiler-integration-20260926.md)、使い方は[Compiler guide](docs/guide/compiler.md)。
+
+公式CLI/WebのEngineリポジトリへの移設、makkii.jp配備、Addon最適化、リリースと版の更新は未実施。[目標設計](docs/design/compiler-sdk.md)の全項目を完了したとはしない。
 
 ## v0.1.0の実装済み範囲
 

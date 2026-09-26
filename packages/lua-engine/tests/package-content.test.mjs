@@ -18,6 +18,9 @@ async function fixture(t) {
     await mkdir(dirname(join(directory, path)), {recursive: true});
     await writeFile(join(directory, path), '// Test fixture\n');
   }
+  await mkdir(join(directory, 'dist/compiler-wasm'), {recursive: true});
+  await writeFile(join(directory, 'dist/compiler-wasm/compiler_bg.wasm'), Buffer.from([0,97,115,109,1,0,0,0]));
+  await writeFile(join(directory, 'dist/compiler-wasm/compiler.js'), '// Compiler fixture\n');
   await mkdir(join(directory, 'dist/wasm'), {recursive: true});
   for (const name of ['screen.wasm', 'storm_lua_wasm.wasm']) {
     await writeFile(join(directory, 'dist/wasm', name), Buffer.from([0,97,115,109,1,0,0,0]));
@@ -49,4 +52,10 @@ test('excluded notices and stray artifacts cannot pass packaging', async t => {
   metadata.files = metadata.files.filter(name => name !== 'TOOLCHAIN_LICENSES.txt');
   await writeFile(join(directory, 'package.json'), JSON.stringify(metadata));
   await assert.rejects(checkPackage(directory), /Required file excluded/);
+});
+
+test('a compiler export cannot be distributed without its WASM payload', async t => {
+  const directory = await fixture(t);
+  await rm(join(directory, 'dist/compiler-wasm/compiler_bg.wasm'));
+  await assert.rejects(checkPackage(directory), /ENOENT/);
 });

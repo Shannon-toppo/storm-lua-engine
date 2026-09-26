@@ -65,3 +65,25 @@ function httpReply(port,request,reply) g_savedata.reply=reply end`);
 assert.ok(output.some(record=>record.source==='print'));
 assert.ok(output.some(record=>record.source==='debug.log'));
 console.log('Consumer example passed: vehicle, addon, host terrain, server calls, logs and save/reload.');
+
+// The compiler is independently loaded, then its artifact is explicitly run.
+const {loadCompiler}=await import('@stormcat-works/storm-lua-engine/compiler');
+const compiler=await loadCompiler({wasmBinary:await readFile(new URL('./compiler-wasm/compiler_bg.wasm',import.meta.resolve('@stormcat-works/storm-lua-engine/compiler')))});
+const compiled=compiler.minify('function onTick()output.setNumber(1,input.getNumber(1)*2)end',{target:'vehicle',numericMode:'exact'});
+assert.equal(compiled.ok,true);
+const compiledVm=engine.createVehicle();
+try {
+  compiledVm.load(compiled.code);compiledVm.io.inputNumbers[0]=4;compiledVm.tick();
+  assert.equal(compiledVm.io.outputNumbers[0],8);
+} finally {compiledVm.dispose();}
+assert.equal(new Set(compiler.passIds()).size,67);
+console.log('Installed compiler subpath: minification, explicit runtime load and output 8 passed.');
+
+const snapshot=compiler.build({entry:'main',modules:{main:"local m=require('m') function onTick()output.setNumber(1,m.read())end",m:"local gain=property.getNumber('Gain') return {read=function()return gain end}"}},{target:'vehicle',numericMode:'exact',minify:true});
+assert.equal(snapshot.ok,true);
+const snapshotVm=engine.createVehicle({properties:{Gain:2}});
+try {
+  snapshotVm.load(snapshot.code);snapshotVm.tick();assert.equal(snapshotVm.io.outputNumbers[0],2);
+  snapshotVm.setProperties({Gain:9});snapshotVm.tick();assert.equal(snapshotVm.io.outputNumbers[0],2);
+} finally {snapshotVm.dispose();}
+console.log('Installed compiler/runtime WASM: captured property remains 2 after host property changes to 9.');

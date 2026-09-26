@@ -63,7 +63,10 @@
       "storm-screen-raster",
       "storm-lua-vm",
       "storm-lua-microcontroller",
-      "storm-lua-addon"
+      "storm-lua-addon",
+      "storm-lua-analysis",
+      "storm-lua-build",
+      "storm-lua-minify"
     ],
     "external": [
       "serde_json"
@@ -95,5 +98,69 @@
     ],
     "dev": [],
     "external": []
+  },
+  "storm-lua-syntax": {
+    "role": "product",
+    "normal": [],
+    "dev": [],
+    "external": [
+      "serde",
+      "serde_json"
+    ]
+  },
+  "storm-lua-analysis": {
+    "role": "product",
+    "normal": [
+      "storm-lua-syntax"
+    ],
+    "dev": [],
+    "external": [
+      "serde",
+      "serde_json"
+    ]
+  },
+  "storm-lua-minify": {
+    "role": "product",
+    "normal": [
+      "storm-lua-syntax",
+      "storm-lua-analysis"
+    ],
+    "dev": [],
+    "external": [
+      "serde",
+      "bincode",
+      "web-time",
+      "serde_json",
+      "mlua"
+    ]
+  },
+  "storm-lua-build": {
+    "role": "product",
+    "normal": [
+      "storm-lua-syntax",
+      "storm-lua-analysis",
+      "storm-lua-minify"
+    ],
+    "dev": [],
+    "external": [
+      "serde",
+      "sourcemap",
+      "serde_json"
+    ]
+  },
+  "storm-lua-compiler-wasm": {
+    "role": "adapter",
+    "normal": [
+      "storm-lua-analysis",
+      "storm-lua-build",
+      "storm-lua-minify"
+    ],
+    "dev": [],
+    "external": [
+      "wasm-bindgen",
+      "serde-wasm-bindgen",
+      "js-sys",
+      "serde"
+    ]
   }
 }

@@ -4,6 +4,8 @@
 
 [インストール・初期化](guide/getting-started.md) · [Addon](guide/addons.md) · [地図・ログ・HTTP](guide/host-services.md) · [利用側API](guide/api-reference.md) · [実行例](../examples/README.md)
 
+[Compiler SDK（開発ブランチ）](guide/compiler.md) · [統合検証](verification/compiler-integration-20260926.md)
+
 ## エンジンを開発・検証する
 
 仕様は「このライブラリの契約」と「実装済み範囲」を分離する。未確認のゲーム挙動は確定事実として扱わず、対応するfixtureゲートと[TASKS](../TASKS.md)で管理する。

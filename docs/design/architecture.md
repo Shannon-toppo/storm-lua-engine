@@ -4,6 +4,11 @@
 
 | Owner | Responsibility | Direct internal dependencies |
 |---|---|---|
+| `storm-lua-syntax` | Lua syntax/AST/visitor, numeric literals, printing and size | none |
+| `storm-lua-analysis` | binding/effect analysis, project validation, lint and property scanning | syntax |
+| `storm-lua-minify` | optimization passes, deterministic candidate search and cost | syntax, analysis |
+| `storm-lua-build` | logical project linking, source maps and coarse compiler API | syntax, analysis, minify |
+| `storm-lua-compiler-wasm` | compiler-only wasm-bindgen adapter, no VM initialization | analysis, minify, build |
 | `storm-lua-spec` | I/O・property・draw types、ScreenSink、binary batch、API catalog、ABI constants | none |
 | `storm-screen-raster` | 画面契約の幾何/文字/色をpixelへ展開、同梱font | spec |
 | `storm-lua-vm` | Lua backend、sandbox、制限・continuation・debugger、owned values、構造化log | none |
@@ -32,3 +37,11 @@ conformanceはtest-only、xtaskはtoolであり、製品から依存できない
 Addonはvmを直接使う別crateとして実装した。microcontroller/rasterへ依存しない。TSもVehicleVm/AddonVmを分け、runtimeの単一registryにenumとして保持する。ログとowned-value変換はVM側で共有し、モードごとに重複実装しない。
 
 worldに作用するserver関数、HTTPクライアント、地形データ、物理計算、IDE永続状態はhostが提供する。host-serviceの同期呼び出しとHTTPの非同期request/replyを区別する。map providerはrasterの任意依存で、Lua-onlyの命令記録には不要。必要なcallerがない抽象や空の成功stubは追加しない。
+
+## Compiler integration branch
+
+The compiler owners are implemented on the development branch; see the [compiler guide](../guide/compiler.md) and [verification](../verification/compiler-integration-20260926.md). Runtime-only consumers do not depend on compiler crates; compiler-only consumers do not normally depend on the VM. The conformance package combines them through dev dependencies.
+
+The syntax visitor and dependency-graph validator have one owner each. Analysis does not depend on the linker or minifier. `storm-lua-build` composes shared services rather than becoming a new implementation core. Low-level implementation modules needed by sibling crates are distinguished from documented host-level entry points.
+
+The compiler WASM is a separate module and memory from runtime/raster. `@stormcat-works/storm-lua-engine/compiler` loads it explicitly; it neither initializes a VM nor creates a Worker. Host applications own lifecycle and scheduling. Official CLI/Web relocation is a later frontend stage, not a dependency of the SDK.

@@ -1,0 +1,23 @@
+[package]
+name = "storm-lua-compiler-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Compiler-only WebAssembly adapter for Storm Lua Engine"
+
+[lints]
+workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+storm-lua-analysis = { workspace = true }
+storm-lua-build = { workspace = true }
+storm-lua-minify = { workspace = true }
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
+js-sys = "0.3"
+serde = { workspace = true }

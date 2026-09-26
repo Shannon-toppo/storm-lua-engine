@@ -2,7 +2,7 @@
 
 記録日: 2026-09-26。基準: Storm Lua Engine v0.1.0。
 
-**設計段階・未実装。** 本文はStorm Minから言語処理機能を移すための目標設計であり、現在利用できるAPIや完了報告ではない。現在の契約は[Architecture](architecture.md)と[利用側API](../guide/api-reference.md)、採用判断は[ADR 0005](../adr/0005-compiler-sdk-integration.md)を参照する。
+**初回のSDK移管・既存ホスト接続を実装済み、未公開。** 本文は全体の目標設計。実装済みの入口は[Compiler guide](../guide/compiler.md)、実行した検証と残件は[統合検証](../verification/compiler-integration-20260926.md)を参照。公式CLI/Webの移設など未完了段階も含むため、本文の全提案を完了扱いしない。現在の契約は[Architecture](architecture.md)と[利用側API](../guide/api-reference.md)、採用判断は[ADR 0005](../adr/0005-compiler-sdk-integration.md)を参照する。
 
 ## 1. 決定範囲
 
