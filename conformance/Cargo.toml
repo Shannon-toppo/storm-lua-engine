@@ -1,0 +1,21 @@
+[package]
+name = "storm-lua-conformance"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+storm-lua-addon = { workspace = true, features = ["debug"] }
+storm-lua-spec = { workspace = true }
+storm-screen-raster = { workspace = true }
+storm-lua-vm = { workspace = true, features = ["backend-mlua", "debug"] }
+storm-lua-microcontroller = { workspace = true, features = ["debug"] }
+serde_json = { workspace = true }
+
+[[example]]
+name = "native-foundation"
+path = "../examples/native-foundation.rs"

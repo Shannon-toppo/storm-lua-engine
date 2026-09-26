@@ -1,0 +1,97 @@
+name: Engine conformance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      RUSTDOCFLAGS: -D rustdoc::broken_intra_doc_links
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cargo build directory
+        shell: bash
+        run: echo "CARGO_TARGET_DIR=$RUNNER_TEMP/storm-lua-engine-target" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Toolchain
+        shell: bash
+        run: rustup toolchain install 1.97.1 --profile minimal --component clippy --component rustfmt
+      - run: cargo fmt --all --check
+      - run: cargo xtask check
+      - run: cargo check --workspace --locked
+      - run: cargo clippy --workspace --locked -- -D warnings
+      - run: cargo run -p storm-lua-conformance --example microcontroller --locked
+      - run: cargo run -p storm-lua-conformance --example differential --locked
+      - run: cargo run -p storm-lua-conformance --example addon_host --locked
+      - run: cargo test --workspace --all-features --locked
+      - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      - run: cargo doc --workspace --all-features --no-deps --locked
+      - run: python3 -m unittest discover -s tools/tests -v
+      - run: npm --prefix packages/lua-engine ci --no-audit --no-fund
+      - run: npm --prefix packages/lua-engine test
+      - run: python3 tools/check_screen_fixtures.py
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cargo build directory
+        shell: bash
+        run: echo "CARGO_TARGET_DIR=$RUNNER_TEMP/storm-lua-engine-target" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rust targets
+        run: |
+          rustup toolchain install 1.97.1 --profile minimal
+          rustup target add --toolchain 1.97.1 wasm32-unknown-unknown wasm32-unknown-emscripten
+      - name: Matched Emscripten SDK
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
+          "$RUNNER_TEMP/emsdk/emsdk" install 6.0.6
+          "$RUNNER_TEMP/emsdk/emsdk" activate 6.0.6
+          echo "$RUNNER_TEMP/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/emsdk/upstream/bin" >> "$GITHUB_PATH"
+      - run: npm --prefix packages/lua-engine ci --no-audit --no-fund
+      - run: npm --prefix packages/lua-engine test
+      - run: python3 tools/check_screen_fixtures.py
+      - run: python3 tools/generate-toolchain-licenses.py --check
+      - run: node tools/build-wasm.mjs --with-tests
+      - run: node tools/check-package.mjs
+      - run: node tools/test-wasm.mjs --with-tests
+      - name: Install browser engines
+        working-directory: packages/lua-engine
+        run: npx playwright install --with-deps chromium firefox webkit
+      - run: node tools/test-browser.mjs
+      - run: node tools/test-package.mjs
+      - name: Package content inspection (no publish)
+        working-directory: packages/lua-engine
+        run: npm pack --dry-run
+      - name: Build and test the Addon Lab consumer
+        working-directory: examples/addon-lab
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          npm test
+      - name: Addon Lab browser interactions
+        working-directory: examples/addon-lab
+        env:
+          LAB_BROWSERS: chromium,firefox,webkit
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: xvfb-run -a npm run test:e2e

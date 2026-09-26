@@ -1,0 +1,15 @@
+Third-party Rust dependencies — storm-lua-engine
+Generated with cargo-about from the locked workspace, including build/test dependencies.
+The separate SCREEN_COMPONENTS_LICENSE covers inherited rendering components, glyphs and accepted conformance data.
+
+{{#each licenses}}
+------------------------------------------------------------------------
+License: {{name}}
+Used by:
+{{#each used_by}}
+  {{crate.name}} {{crate.version}}{{#if crate.repository}} ({{crate.repository}}){{/if}}
+{{/each}}
+------------------------------------------------------------------------
+{{{text}}}
+
+{{~/each~}}

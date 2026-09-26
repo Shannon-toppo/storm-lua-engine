@@ -1,0 +1,84 @@
+//! リポジトリの検証およびABI型の生成。製品にはリンクされません。
+use std::{error::Error, fs, path::Path, process::Command};
+use storm_lua_spec::{abi, io::CHANNEL_COUNT};
+
+fn contract() -> serde_json::Value {
+    serde_json::json!({
+        "abiVersion": abi::ABI_VERSION, "capabilities": abi::CAPABILITIES,
+        "channelCount": CHANNEL_COUNT, "numberBytes": 4,
+        "ioByteLength": abi::IO_BYTE_LENGTH, "ioAlignment": abi::IO_ALIGNMENT,
+        "inputNumbersOffset": abi::INPUT_NUMBERS_OFFSET,
+        "inputBooleansOffset": abi::INPUT_BOOLEANS_OFFSET,
+        "outputNumbersOffset": abi::OUTPUT_NUMBERS_OFFSET,
+        "outputBooleansOffset": abi::OUTPUT_BOOLEANS_OFFSET
+    })
+}
+fn generated(check: bool) -> Result<(), Box<dyn Error>> {
+    let json = serde_json::to_string_pretty(&contract())?;
+    let source = format!(
+        "// cargo xtask generate によって自動生成されています。編集しないでください。\nexport const ABI = {json} as const;\n"
+    );
+    let catalog: Vec<_> = storm_lua_spec::catalog::FUNCTIONS
+        .iter()
+        .map(|api| {
+            serde_json::json!({
+                "path": api.path, "parameters": api.parameters, "returns": api.returns,
+                "phase": api.phase, "availability": api.availability, "effect": api.effect
+            })
+        })
+        .collect();
+    let catalog_json = serde_json::to_string_pretty(&catalog)?;
+    let addon_events = serde_json::to_string_pretty(storm_lua_spec::addon::EVENTS)?;
+    let addon_api = serde_json::json!({"profile":"addon","functions":storm_lua_spec::addon::FUNCTIONS,"events":storm_lua_spec::addon::EVENTS});
+    let addon_json = serde_json::to_string_pretty(&addon_api)?;
+    let catalog_ts = format!("// cargo xtask generate によって自動生成されています。\nexport const VEHICLE_API_CATALOG = {catalog_json} as const;\nexport const ADDON_API_CATALOG = {addon_json} as const;\nexport const ADDON_EVENTS = {addon_events} as const;\n");
+    for (path, text) in [
+        ("packages/lua-engine/src/generated.ts", source),
+        ("fixtures/abi-v1.json", format!("{json}\n")),
+        ("packages/lua-engine/src/catalog.ts", catalog_ts),
+        ("fixtures/api-catalog.json", format!("{catalog_json}\n")),
+        ("fixtures/addon-api-catalog.json", format!("{addon_json}\n")),
+    ] {
+        if check {
+            if fs::read_to_string(path)? != text {
+                return Err(format!("generated file differs: {path}").into());
+            }
+        } else {
+            if let Some(parent) = Path::new(path).parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::write(path, text)?;
+        }
+    }
+    Ok(())
+}
+fn run(program: &str, args: &[&str]) -> Result<(), Box<dyn Error>> {
+    let status = Command::new(program).args(args).status()?;
+    if !status.success() {
+        return Err(format!("{program} failed: {status}").into());
+    }
+    Ok(())
+}
+fn main() -> Result<(), Box<dyn Error>> {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("missing workspace root")?;
+    std::env::set_current_dir(root)?;
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() != 1 {
+        return Err("usage: cargo xtask <generate|check>".into());
+    }
+    match args[0].as_str() {
+        "generate" => {
+            generated(false)?;
+            run("python3", &["tools/generate-font.py"])?;
+        }
+        "check" => {
+            generated(true)?;
+            run("python3", &["tools/generate-font.py", "--check"])?;
+            run("python3", &["tools/check_repository.py"])?;
+        }
+        _ => return Err("usage: cargo xtask <generate|check>".into()),
+    }
+    Ok(())
+}

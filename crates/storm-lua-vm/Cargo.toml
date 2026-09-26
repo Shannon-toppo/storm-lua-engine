@@ -1,0 +1,19 @@
+[package]
+name = "storm-lua-vm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Lua 5.3 backend ownership and execution contracts"
+
+[lints]
+workspace = true
+
+[dependencies]
+mlua = { workspace = true }
+
+[features]
+default = []
+debug = []
+backend-mlua = []

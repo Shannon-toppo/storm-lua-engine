@@ -1,0 +1,99 @@
+import { adaptModule, Bridge, EngineError, object, unsigned, type Backend, type Outcome } from './bridge.js';
+import { RawIoView, type CompositeIoViews } from './raw.js';
+import { FrameLease } from './frame.js';
+import { encodeProperties, type Properties } from './properties.js';
+import { ScriptVm, type ScriptOptions, type LogHandler } from './script.js';
+import { AddonVm, type AddonOptions } from './addon.js';
+import { HostDispatcher, type MapProvider } from './host.js';
+import { encodeLuaValue } from './values.js';
+const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8',{fatal:true});
+export interface VehicleOptions extends ScriptOptions { readonly properties?: Properties; readonly mapProvider?: MapProvider }
+/** ビークルモードは Composite I/O と描画を所有し、アドオンのサーバーAPIは持ちません。 */
+export class VehicleVm extends ScriptVm {
+  readonly mode = 'vehicle' as const;
+  readonly #io: RawIoView;
+  constructor(bridge: Bridge, handle: number, onLog: LogHandler | undefined, releaseHost: () => void) {
+    super(bridge,handle,onLog,releaseHost);
+    if (bridge.query('mode',handle) !== 1) throw new EngineError(4,'Handle is not a vehicle');
+    this.#io = new RawIoView(bridge.backend.memory,bridge.query('io_ptr',handle),bridge.invoke('abi_version'));
+  }
+  get io(): CompositeIoViews { this.alive(); this.bridge.assertIdle(); return this.#io.borrow(); }
+  tick(): Outcome { return this.execute(() => { this.#io.validateInputs(); return this.bridge.call('tick',this.handle); }); }
+  draw(width: number, height: number): Outcome { return this.execute(() => this.bridge.call('draw',this.handle,unsigned(width,'width'),unsigned(height,'height'))); }
+  frame(): FrameLease { this.alive(); return new FrameLease(this.bridge,this.handle,this.alive); }
+  setProperties(properties: Properties): void {
+    this.execute(() => this.bridge.upload(encodeProperties(properties),(pointer,length) => this.bridge.call('set_properties',this.handle,pointer,length)));
+  }
+  reset(): void { this.execute(() => this.bridge.call('reset',this.handle)); }
+}
+function budgets(options: ScriptOptions): [number,number] {
+  if (options.onLog !== undefined && typeof options.onLog !== 'function') throw new TypeError('onLog must be a function');
+  if (options.devLogs !== undefined && typeof options.devLogs !== 'boolean') throw new TypeError('devLogs must be Boolean');
+  return [unsigned(options.instructionBudget ?? 1_000_000,'instructionBudget'),unsigned(options.memoryBytes ?? 8*1024*1024,'memoryBytes')];
+}
+export class LuaEngine {
+  readonly bridge: Bridge;
+  constructor(backend: Backend, private readonly hosts?: HostDispatcher) {
+    this.bridge = new Bridge(backend);
+    if (!(this.bridge.capabilities & 2)) throw new EngineError(6,'Runtime capability is absent');
+  }
+  private cleanup(handle: number, key: number): void {
+    try { if (handle) this.bridge.call('dispose',handle); } finally { if (key) this.hosts?.remove(key); }
+  }
+  /** ユーザーコードが実行される前に、プロパティ、ログ記録、およびマッププロバイダが構成されます。 */
+  createVehicle(options: VehicleOptions = {}): VehicleVm {
+    const [instructions,memory] = budgets(options);
+    let key = 0, handle = 0;
+    try {
+      if (options.mapProvider !== undefined) {
+        if (typeof options.mapProvider !== 'function') throw new TypeError('mapProvider must be a function');
+        if (!this.hosts || !(this.bridge.capabilities & 16)) throw new EngineError(6,'This runtime cannot call JS host services');
+        key = this.hosts.register({map:options.mapProvider});
+      }
+      handle = this.bridge.query('new',instructions,memory);
+      const vm = new VehicleVm(this.bridge,handle,options.onLog,() => { if (key) this.hosts?.remove(key); });
+      if (key) this.bridge.call('set_map_host',handle,key);
+      if (options.properties !== undefined) vm.setProperties(options.properties);
+      if (options.devLogs || options.onLog) vm.enableLogs();
+      return vm;
+    } catch (error) { try { this.cleanup(handle,key); } catch (cleanupError) { throw new AggregateError([error,cleanupError],'VM creation and cleanup both failed'); } throw error; }
+  }
+  /** アドオンモードは、型レベルおよび生ハンドルの境界の両方で明確に分離されています。 */
+  createAddon(options: AddonOptions = {}): AddonVm {
+    const [instructions,memory] = budgets(options);
+    if (!(this.bridge.capabilities & 8)) throw new EngineError(6,'Addon profile is absent');
+    const server = {...options.server}; const names = Object.keys(server);
+    if (names.length > 512 || Object.values(server).some(value => typeof value !== 'function')) throw new TypeError('Invalid server function configuration');
+    let key = 0, handle = 0;
+    try {
+      if (names.length) {
+        if (!this.hosts || !(this.bridge.capabilities & 16)) throw new EngineError(6,'This runtime cannot call JS host services');
+        key = this.hosts.register({server});
+      }
+      const config = encoder.encode(JSON.stringify({newWorld:options.newWorld ?? true,properties:JSON.parse(decoder.decode(encodeProperties(options.properties ?? {}))) as unknown,savedata:options.savedata === undefined ? null : encodeLuaValue(options.savedata),server:names}));
+      handle = this.bridge.upload(config,(pointer,length) => this.bridge.query('new_addon',instructions,memory,key,pointer,length));
+      const vm = new AddonVm(this.bridge,handle,options.onLog,() => { if (key) this.hosts?.remove(key); });
+      if (options.devLogs || options.onLog) vm.enableLogs();
+      return vm;
+    } catch (error) { try { this.cleanup(handle,key); } catch (cleanupError) { throw new AggregateError([error,cleanupError],'Addon creation and cleanup both failed'); } throw error; }
+  }
+}
+export interface RuntimeInitOptions { readonly moduleUrl?: string | URL; readonly wasmBinary?: Uint8Array; readonly wasmUrl?: string | URL }
+const initialized = new WeakMap<object,LuaEngine>();
+/** 注入可能な Emscripten ファクトリ出力により、バンドラや制約のある WebView をサポートします。 */
+export function fromEmscripten(module: unknown): LuaEngine {
+  const record = object(module), existing = initialized.get(record);
+  if (existing) return existing;
+  const hosts = new HostDispatcher(); record['sleHost'] = hosts.invoke;
+  const engine = new LuaEngine(adaptModule(module,'sle',true),hosts);
+  initialized.set(record,engine); return engine;
+}
+export async function loadRuntime(options: RuntimeInitOptions = {}): Promise<LuaEngine> {
+  const namespace: unknown = await import(String(options.moduleUrl ?? new URL('./wasm/storm_lua_wasm.js',import.meta.url)));
+  const factory = object(namespace)['default'];
+  if (typeof factory !== 'function') throw new TypeError('Runtime module has no default factory');
+  const configuration: Record<string,unknown> = {};
+  if (options.wasmBinary) configuration['wasmBinary'] = options.wasmBinary;
+  if (options.wasmUrl) configuration['locateFile'] = (path:string,prefix:string):string => path.endsWith('.wasm') ? String(options.wasmUrl) : prefix+path;
+  return fromEmscripten(await factory(configuration));
+}

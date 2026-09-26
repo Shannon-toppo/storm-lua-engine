@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-25",
+  "host": {
+    "os": "Linux",
+    "machine": "x86_64",
+    "cpuModel": "13th Gen Intel(R) Core(TM) i5-13400F"
+  },
+  "toolchain": {
+    "rust": "1.97.1",
+    "emscripten": "6.0.6",
+    "node": "22.22.1",
+    "mlua": "0.10.5",
+    "lua": "5.3"
+  },
+  "fixtures": {
+    "fixtures/bench/control.lua": "34b87b4724bd6660678c39748c2b14472dc4c120f0807630d51a3f3fb6127d32",
+    "fixtures/bench/draw.lua": "65c78e0c59c103172377b3a02031aadbdc94f8a7c8b94fd7cdbff010a14ed432"
+  },
+  "results": [
+    {
+      "breakpoints": false,
+      "createAndLoad": {
+        "batches": 9,
+        "iterationsPerBatch": 100,
+        "maxBatchMeanUs": 58.6313,
+        "medianBatchMeanUs": 57.18787999999999
+      },
+      "debugCompiled": true,
+      "draw96": {
+        "batches": 9,
+        "iterationsPerBatch": 250,
+        "maxBatchMeanUs": 110.62862,
+        "medianBatchMeanUs": 106.392984
+      },
+      "runtime": "native-release",
+      "tick": {
+        "batches": 9,
+        "iterationsPerBatch": 5000,
+        "maxBatchMeanUs": 0.8520072,
+        "medianBatchMeanUs": 0.8333543999999999
+      }
+    },
+    {
+      "runtime": "wasm-release-node",
+      "tick": {
+        "medianBatchMeanUs": 1.3026438000000014,
+        "maxBatchMeanUs": 2.727976799999999,
+        "batches": 9,
+        "iterationsPerBatch": 5000
+      },
+      "draw96": {
+        "medianBatchMeanUs": 133.50250800000003,
+        "maxBatchMeanUs": 134.69110799999999,
+        "batches": 9,
+        "iterationsPerBatch": 250
+      },
+      "createAndLoad": {
+        "medianBatchMeanUs": 73.9104500000002,
+        "maxBatchMeanUs": 82.26405999999997,
+        "batches": 9,
+        "iterationsPerBatch": 100
+      },
+      "debugCompiled": true,
+      "breakpoints": false
+    }
+  ],
+  "notes": [
+    "100 warm-up iterations; nine batches; statistics are batch means, not per-call percentiles.",
+    "Shared development host. No performance SLA; GPU/Canvas/Worker transfer and cold module initialization are excluded.",
+    "Native uses direct borrowed contracts; WASM includes its public JS adapter, so the difference is not isolated FFI cost."
+  ]
+}

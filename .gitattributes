@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.wasm binary
+
+# 第三者の許諾原文は空白も含めて保持する。
+packages/lua-engine/RUST_STD_LICENSES.html -whitespace
+packages/lua-engine/TOOLCHAIN_LICENSES.txt -whitespace

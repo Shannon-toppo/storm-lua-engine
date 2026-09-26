@@ -1,0 +1,99 @@
+{
+  "storm-lua-spec": {
+    "role": "product",
+    "normal": [],
+    "dev": [],
+    "external": []
+  },
+  "storm-screen-raster": {
+    "role": "product",
+    "normal": [
+      "storm-lua-spec"
+    ],
+    "dev": [],
+    "external": []
+  },
+  "storm-lua-vm": {
+    "role": "product",
+    "normal": [],
+    "dev": [],
+    "external": [
+      "mlua"
+    ]
+  },
+  "storm-lua-microcontroller": {
+    "role": "product",
+    "normal": [
+      "storm-lua-spec",
+      "storm-lua-vm"
+    ],
+    "dev": [],
+    "external": []
+  },
+  "storm-lua-wasm": {
+    "role": "adapter",
+    "normal": [
+      "storm-lua-spec",
+      "storm-lua-microcontroller",
+      "storm-screen-raster",
+      "storm-lua-bridge",
+      "storm-lua-vm",
+      "storm-lua-addon"
+    ],
+    "dev": [],
+    "external": [
+      "serde_json"
+    ]
+  },
+  "storm-screen-wasm": {
+    "role": "adapter",
+    "normal": [
+      "storm-lua-spec",
+      "storm-screen-raster",
+      "storm-lua-bridge"
+    ],
+    "dev": [],
+    "external": []
+  },
+  "storm-lua-conformance": {
+    "role": "test",
+    "normal": [],
+    "dev": [
+      "storm-lua-spec",
+      "storm-screen-raster",
+      "storm-lua-vm",
+      "storm-lua-microcontroller",
+      "storm-lua-addon"
+    ],
+    "external": [
+      "serde_json"
+    ]
+  },
+  "xtask": {
+    "role": "tool",
+    "normal": [
+      "storm-lua-spec"
+    ],
+    "dev": [],
+    "external": [
+      "serde_json"
+    ]
+  },
+  "storm-lua-bridge": {
+    "role": "adapter",
+    "normal": [
+      "storm-lua-spec"
+    ],
+    "dev": [],
+    "external": []
+  },
+  "storm-lua-addon": {
+    "role": "product",
+    "normal": [
+      "storm-lua-spec",
+      "storm-lua-vm"
+    ],
+    "dev": [],
+    "external": []
+  }
+}

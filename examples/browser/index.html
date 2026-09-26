@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lua engine — headless embedding example</title>
+<style>
+body{font:16px system-ui;max-width:820px;margin:2rem auto;padding:0 1rem}textarea{box-sizing:border-box;width:100%;height:16rem;font:14px monospace}canvas{width:384px;height:384px;background:#000;image-rendering:pixelated;border:1px solid #888}button{padding:.6rem 1rem;margin:1rem 0}pre{white-space:pre-wrap}
+</style>
+<h1>Lua microcontroller example</h1>
+<p>Explicit load → tick → draw. No timer, network provider or implicit worker. Drawing follows the versioned screen contract in this repository.</p>
+<label for="source">Lua source</label>
+<textarea id="source" spellcheck="false">local gain = property.getNumber("Gain")
+function onTick()
+  output.setNumber(1,input.getNumber(1)*gain)
+end
+function onDraw()
+  screen.setColor(20,30,45)
+  screen.drawClear()
+  screen.setColor(255,255,255)
+  screen.drawText(5,5,"LUA ENGINE")
+  screen.setColor(40,210,150)
+  screen.drawCircle(48,52,24)
+end</textarea>
+<button id="run">Load and run one tick</button>
+<pre id="status">Ready. Build the WASM artifacts before running.</pre>
+<canvas id="monitor" width="96" height="96"></canvas>
+<script type="module" src="./main.js"></script></html>

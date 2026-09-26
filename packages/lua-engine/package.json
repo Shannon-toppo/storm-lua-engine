@@ -1,0 +1,79 @@
+{
+  "name": "@stormcat-works/storm-lua-engine",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Embeddable Stormworks vehicle/addon Lua runtime with screen rasterization and host services",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "SCREEN_COMPONENTS_LICENSE",
+    "THIRD_PARTY_LICENSES.txt",
+    "TOOLCHAIN_LICENSES.txt",
+    "RUST_STD_LICENSES.html"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./raw": {
+      "types": "./dist/raw.d.ts",
+      "import": "./dist/raw.js"
+    },
+    "./debug": {
+      "types": "./dist/debug.d.ts",
+      "import": "./dist/debug.js"
+    },
+    "./wasm/*": "./dist/wasm/*",
+    "./raster": {
+      "types": "./dist/raster.d.ts",
+      "import": "./dist/raster.js"
+    },
+    "./commands": {
+      "types": "./dist/commands.d.ts",
+      "import": "./dist/commands.js"
+    },
+    "./canvas": {
+      "types": "./dist/canvas.d.ts",
+      "import": "./dist/canvas.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && npm run check:consumer && node --test tests/*.test.mjs",
+    "prepack": "npm run build && node ../../tools/check-package.mjs",
+    "test:browser": "node ../../tools/test-browser.mjs",
+    "check:consumer": "tsc -p tsconfig.consumer.json"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3",
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stormcat-Works/storm-lua-engine.git",
+    "directory": "packages/lua-engine"
+  },
+  "homepage": "https://github.com/Stormcat-Works/storm-lua-engine#readme",
+  "bugs": {
+    "url": "https://github.com/Stormcat-Works/storm-lua-engine/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "stormworks",
+    "lua",
+    "wasm",
+    "webassembly",
+    "rust"
+  ]
+}

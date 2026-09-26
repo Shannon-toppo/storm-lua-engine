@@ -1,0 +1,157 @@
+{
+  "date": "2026-09-25",
+  "scope": "self-contained-contracts-and-distribution",
+  "tests": {
+    "native": 56,
+    "javascript": 22,
+    "wasm": 19,
+    "python": 19,
+    "sample": 14,
+    "failed": 0,
+    "skipped": 0
+  },
+  "screen": {
+    "cases": 731,
+    "paths": [
+      "direct",
+      "lua"
+    ],
+    "semantic_values_preserved": true,
+    "semantic_sha256": "4d9918d549574014527f39df2c46dfcc683adee9424325ac9f8e48619a6a7076",
+    "glyph_numbers_preserved": true,
+    "raster_algorithm_unchanged": true
+  },
+  "browser": [
+    {
+      "browser": "chromium",
+      "version": "151.0.7922.34",
+      "rgbaCases": 731,
+      "luaCases": 731,
+      "workers": 2,
+      "debugger": true,
+      "canvasExample": true,
+      "addon": true,
+      "hostServer": true,
+      "mapProvider": true,
+      "http": true,
+      "structuredLogs": true
+    },
+    {
+      "browser": "firefox",
+      "version": "153.0",
+      "rgbaCases": 731,
+      "luaCases": 731,
+      "workers": 2,
+      "debugger": true,
+      "canvasExample": true,
+      "addon": true,
+      "hostServer": true,
+      "mapProvider": true,
+      "http": true,
+      "structuredLogs": true
+    },
+    {
+      "browser": "webkit",
+      "version": "26.5",
+      "rgbaCases": 731,
+      "luaCases": 731,
+      "workers": 2,
+      "debugger": true,
+      "canvasExample": true,
+      "addon": true,
+      "hostServer": true,
+      "mapProvider": true,
+      "http": true,
+      "structuredLogs": true
+    }
+  ],
+  "sample_browsers": [
+    {
+      "browser": "chromium",
+      "version": "151.0.7922.34",
+      "desktop": [
+        1440,
+        1000
+      ],
+      "mobile": [
+        390,
+        844
+      ],
+      "tick": 57,
+      "entities": 4,
+      "webgl": true,
+      "codeMirror": true,
+      "editAndErrorRecovery": true,
+      "readOnlyHost": true,
+      "eventAndHttp": true,
+      "reloadAndImport": true,
+      "consoleErrors": [],
+      "requestFailures": []
+    },
+    {
+      "browser": "firefox",
+      "version": "153.0",
+      "desktop": [
+        1440,
+        1000
+      ],
+      "mobile": [
+        390,
+        844
+      ],
+      "tick": 64,
+      "entities": 4,
+      "webgl": true,
+      "codeMirror": true,
+      "editAndErrorRecovery": true,
+      "readOnlyHost": true,
+      "eventAndHttp": true,
+      "reloadAndImport": true,
+      "consoleErrors": [],
+      "requestFailures": []
+    },
+    {
+      "browser": "webkit",
+      "version": "26.5",
+      "desktop": [
+        1440,
+        1000
+      ],
+      "mobile": [
+        390,
+        844
+      ],
+      "tick": 54,
+      "entities": 4,
+      "webgl": true,
+      "codeMirror": true,
+      "editAndErrorRecovery": true,
+      "readOnlyHost": true,
+      "eventAndHttp": true,
+      "reloadAndImport": true,
+      "consoleErrors": [],
+      "requestFailures": []
+    }
+  ],
+  "distribution": {
+    "checked_files": 46,
+    "checked_wasm_files": 3,
+    "known_home_path_hits": 0,
+    "normalized_dependency_paths_in_runtime": 19,
+    "package_files": 41
+  },
+  "sha256": {
+    "fixtures/screen/cases-v1.json": "f7cebb0d0c530ef0b39a65d2e0b1028d2f921482c7a367a8642d8220055c645a",
+    "data/fonts/tiny-4x5.json": "5a33d126e3415e9d9f33d3390f32f907897cb159d74bca1ab7a40eb1e109b7bb",
+    "licenses/screen-components-MIT.txt": "7122fa1a29c09c326cbacae1af145d9a3ec8b6f9f65e05d4f11f9cd2b38cfb42",
+    "packages/lua-engine/dist/wasm/storm_lua_wasm.wasm": "a0330fd390428e46742ca8ae1f8c1d34b26593c8d21113184a1e48b0699ecfa4",
+    "packages/lua-engine/dist/wasm/screen.wasm": "504eb4585c3e590f61f18b5688e16f86dee8bbf342df449cb5360695201feb14",
+    "examples/addon-lab/dist/engine/storm_lua_wasm.wasm": "a0330fd390428e46742ca8ae1f8c1d34b26593c8d21113184a1e48b0699ecfa4"
+  },
+  "limitations": [
+    "No new in-game measurements",
+    "No native Windows/macOS/other CPU execution in this run",
+    "No remote CI run",
+    "No history rewrite, push or publish"
+  ]
+}

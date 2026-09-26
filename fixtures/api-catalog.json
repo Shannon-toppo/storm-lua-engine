@@ -1,0 +1,258 @@
+[
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorOcean",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorShallows",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorLand",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorGrass",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorSand",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorSnow",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorRock",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "map-palette",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setMapColorGravel",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "queue-http",
+    "parameters": "port: integer, request: string",
+    "path": "async.httpGet",
+    "phase": "any",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-signal",
+    "parameters": "channel: integer",
+    "path": "input.getNumber",
+    "phase": "tick",
+    "returns": "number"
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-signal",
+    "parameters": "channel: integer",
+    "path": "input.getBool",
+    "phase": "tick",
+    "returns": "boolean"
+  },
+  {
+    "availability": "implemented",
+    "effect": "write-signal",
+    "parameters": "channel: integer, value: number",
+    "path": "output.setNumber",
+    "phase": "tick",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "write-signal",
+    "parameters": "channel: integer, value: boolean",
+    "path": "output.setBool",
+    "phase": "tick",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-property",
+    "parameters": "label: string",
+    "path": "property.getNumber",
+    "phase": "any",
+    "returns": "number"
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-property",
+    "parameters": "label: string",
+    "path": "property.getBool",
+    "phase": "any",
+    "returns": "boolean"
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-property",
+    "parameters": "label: string",
+    "path": "property.getText",
+    "phase": "any",
+    "returns": "string"
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-context",
+    "parameters": "",
+    "path": "screen.getWidth",
+    "phase": "draw",
+    "returns": "integer"
+  },
+  {
+    "availability": "implemented",
+    "effect": "read-context",
+    "parameters": "",
+    "path": "screen.getHeight",
+    "phase": "draw",
+    "returns": "integer"
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "r: number, g: number, b: number, a?: number",
+    "path": "screen.setColor",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "",
+    "path": "screen.drawClear",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x1: number, y1: number, x2: number, y2: number",
+    "path": "screen.drawLine",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x: number, y: number, width: number, height: number",
+    "path": "screen.drawRect",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x: number, y: number, width: number, height: number",
+    "path": "screen.drawRectF",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x: number, y: number, radius: number",
+    "path": "screen.drawCircle",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x: number, y: number, radius: number",
+    "path": "screen.drawCircleF",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x1: number, y1: number, x2: number, y2: number, x3: number, y3: number",
+    "path": "screen.drawTriangle",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x1: number, y1: number, x2: number, y2: number, x3: number, y3: number",
+    "path": "screen.drawTriangleF",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x: number, y: number, text: string",
+    "path": "screen.drawText",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "implemented",
+    "effect": "draw-command",
+    "parameters": "x: number, y: number, width: number, height: number, text: string, horizontalAlign: number, verticalAlign: number",
+    "path": "screen.drawTextBox",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "requires-provider",
+    "effect": "host-service",
+    "parameters": "x: number, y: number, zoom: number",
+    "path": "screen.drawMap",
+    "phase": "draw",
+    "returns": ""
+  },
+  {
+    "availability": "host-extension",
+    "effect": "log",
+    "parameters": "...: any",
+    "path": "print",
+    "phase": "any",
+    "returns": ""
+  },
+  {
+    "availability": "host-extension",
+    "effect": "log",
+    "parameters": "...: any",
+    "path": "debug.log",
+    "phase": "any",
+    "returns": ""
+  }
+]

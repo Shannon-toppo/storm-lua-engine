@@ -1,0 +1,14 @@
+[package]
+name = "storm-screen-raster"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "CPU screen raster foundations with bundled bitmap glyphs"
+
+[lints]
+workspace = true
+
+[dependencies]
+storm-lua-spec = { workspace = true }
