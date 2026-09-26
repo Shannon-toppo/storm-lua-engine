@@ -8,7 +8,15 @@ use storm_lua_vm::{
 };
 
 fn paused() -> Result<Microcontroller, Box<dyn Error>> {
-    let mut vm = Microcontroller::new(Default::default())?;
+    paused_in(storm_lua_spec::environment::EnvironmentProfile::Game)
+}
+fn paused_in(
+    environment: storm_lua_spec::environment::EnvironmentProfile,
+) -> Result<Microcontroller, Box<dyn Error>> {
+    let mut vm = Microcontroller::new(MicrocontrollerConfig {
+        environment,
+        ..Default::default()
+    })?;
     vm.load(
         b"function onTick()
  local x=9223372036854775807
@@ -88,7 +96,7 @@ end",
 }
 #[test]
 fn runaway_watch_is_bounded_and_main_continuation_survives() -> Result<(), Box<dyn Error>> {
-    let mut vm = paused()?;
+    let mut vm = paused_in(storm_lua_spec::environment::EnvironmentProfile::Extended)?;
     for expression in ["(function()while true do end end)()","(function()table.sort({1,2},function()while true do pcall(function()while true do end end)end end)end)()"]{
         assert_eq!(vm.evaluate_watch(0,expression).err().ok_or("watch did not fail")?.kind,ErrorKind::Limit);
     }

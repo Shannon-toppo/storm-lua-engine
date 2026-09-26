@@ -4,7 +4,7 @@
 
 [インストール・初期化](guide/getting-started.md) · [Addon](guide/addons.md) · [地図・ログ・HTTP](guide/host-services.md) · [利用側API](guide/api-reference.md) · [実行例](../examples/README.md)
 
-[Compiler SDK（開発ブランチ）](guide/compiler.md) · [統合検証](verification/compiler-integration-20260926.md)
+[環境とホスト拡張](guide/environments.md) · [環境仕様](specs/environments.md) · [Compiler SDK（開発ブランチ）](guide/compiler.md) · [統合検証](verification/compiler-integration-20260926.md)
 
 ## エンジンを開発・検証する
 

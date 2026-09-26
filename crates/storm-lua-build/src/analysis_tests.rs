@@ -347,6 +347,7 @@ mod tests {
         let options = AnalyzeOptions {
             target: Default::default(),
             disabled_rules: vec![codes::UNUSED_LOCAL.to_string()],
+            ..Default::default()
         };
         let result = analyze(&p, &options);
         assert!(result
@@ -361,6 +362,7 @@ mod tests {
         let options = AnalyzeOptions {
             target: Default::default(),
             disabled_rules: vec![codes::ENTRY_NOT_FOUND.to_string()],
+            ..Default::default()
         };
         let result = analyze(&p, &options);
         assert!(result

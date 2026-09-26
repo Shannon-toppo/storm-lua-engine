@@ -12,14 +12,14 @@
 | `engine.createAddon(options?)` | `AddonVm`。newWorld、savedata、メニュープロパティ、server関数、ログを設定 |
 | `/raster`の`loadRaster(options?)` | Luaなしの描画用engine。`createRaster(width,height)`で描画先を作成 |
 
-共通生成設定は`instructionBudget`（既定1,000,000）、`memoryBytes`（既定8MiB）、`devLogs`、`onLog`です。WASM adapterのLuaメモリ設定は最大256MiB。予算はコールバック単位で、ホスト関数の壁時計実行時間を中断する機構ではありません。
+共通生成設定は`environment`（既定`game`）、`bindings`（extended専用のホスト値・同期関数）、`instructionBudget`（既定1,000,000）、`memoryBytes`（既定8MiB）、`devLogs`、`onLog`です。WASM adapterのLuaメモリ設定は最大256MiB。予算はコールバック単位で、ホスト関数の壁時計実行時間を中断する機構ではありません。
 
 ## 両モード共通
 
 | メソッド | 契約 |
 |---|---|
 | `load(source, name?)` | stringまたはUint8ArrayのテキストLuaをロード。結果はcompleted/suspended/missing |
-| `enableLogs()` | printと制限付きdebug.logを有効化 |
+| `enableLogs()` | extended専用。gameでは拒否。debug.logは両環境で常時使用可能 |
 | `drainLogRecords()` | sourceとbytesを持つ所有ログを取り出す |
 | `drainLogs()` | bytesのみを取り出す |
 | `flushLogs(handler)` | 明示配送し、件数を返す |
@@ -83,3 +83,7 @@ modeはcontinue／into／over／outです。watchは副作用を起こす明示�
 | 10 | 提供されたhostサービスの失敗 |
 
 raw statusの0はcompleted、7はsuspended、8はmissingです。JSの引数検証や配送先の例外は、この表の番号だけに正規化されるとは限りません。
+
+## 環境とホスト拡張
+
+`game`と`extended`はVehicle/Addonの区別とは別です。`onLog`は配送先だけを指定し、printを有効化しません。任意の標準関数置換・独自関数・値はextendedの`bindings`で初期化前に指定します。reset/reloadでも同じ設定を再適用します。[利用例と制約](environments.md)。

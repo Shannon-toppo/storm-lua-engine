@@ -11,6 +11,7 @@ description = "Lua 5.3 backend ownership and execution contracts"
 workspace = true
 
 [dependencies]
+storm-lua-spec = { workspace = true }
 mlua = { workspace = true }
 
 [features]

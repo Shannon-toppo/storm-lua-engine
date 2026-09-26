@@ -11,3 +11,4 @@ description = "Stormworks Lua domain and binary boundary contracts"
 workspace = true
 
 [dependencies]
+serde = { workspace = true }

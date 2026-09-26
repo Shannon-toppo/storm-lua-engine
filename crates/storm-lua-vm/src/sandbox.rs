@@ -2,13 +2,23 @@
 use mlua::{Lua, Table, Value, Variadic};
 use std::{cell::Cell, rc::Rc};
 
-pub(crate) fn environment(lua: &Lua) -> mlua::Result<Table> {
+pub(crate) fn environment(
+    lua: &Lua,
+    profile: storm_lua_spec::environment::EnvironmentProfile,
+) -> mlua::Result<Table> {
     let globals = lua.globals();
     let env = lua.create_table()?;
-    for name in [
-        "assert", "error", "ipairs", "next", "pairs", "pcall", "select", "tonumber", "tostring",
-        "type", "xpcall",
-    ] {
+    for name in storm_lua_spec::environment::GAME_FUNCTIONS
+        .iter()
+        .copied()
+        .chain(
+            storm_lua_spec::environment::EXTENDED_FUNCTIONS
+                .iter()
+                .copied()
+                .filter(|_| profile == storm_lua_spec::environment::EnvironmentProfile::Extended)
+                .filter(|name| !matches!(*name, "print" | "unpack")),
+        )
+    {
         env.raw_set(name, globals.raw_get::<Value>(name)?)?;
     }
     for name in ["string", "table", "math"] {
@@ -18,10 +28,12 @@ pub(crate) fn environment(lua: &Lua) -> mlua::Result<Table> {
     globals
         .get::<Table>("string")?
         .raw_set("dump", Value::Nil)?;
-    env.raw_set(
-        "unpack",
-        globals.get::<Table>("table")?.raw_get::<Value>("unpack")?,
-    )?;
+    if profile == storm_lua_spec::environment::EnvironmentProfile::Extended {
+        env.raw_set(
+            "unpack",
+            globals.get::<Table>("table")?.raw_get::<Value>("unpack")?,
+        )?;
+    }
     install_random(lua, &env.get::<Table>("math")?)?;
     Ok(env)
 }

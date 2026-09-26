@@ -19,6 +19,12 @@ use storm_lua_syntax::lexer::Lexer;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AnalyzeOptions {
+    /// Same script-visible profile used by runtime and build.
+    #[serde(default)]
+    pub environment: storm_lua_spec::environment::EnvironmentProfile,
+    /// Host-provided paths, for name diagnostics and conservative compilation.
+    #[serde(default)]
+    pub host_bindings: Vec<String>,
     /// Language/API assumptions used by diagnostics; currently vehicle only.
     #[serde(default)]
     pub target: crate::CompilerTarget,
@@ -151,19 +157,56 @@ fn apply_disabled_rules(
 /// `LuaProject` を解析する（設計 §5）。構文エラーで throw しない/`ok:false` にしない
 /// （編集中呼び出しが前提。§5.1）。パリティ規則（§3/§4）は `link_project` と同じ診断を返す。
 pub fn analyze(project: &LuaProject, options: &AnalyzeOptions) -> AnalyzeResult {
+    if (!options.host_bindings.is_empty()
+        && options.environment != storm_lua_spec::environment::EnvironmentProfile::Extended)
+        || options
+            .host_bindings
+            .iter()
+            .any(|p| !storm_lua_spec::environment::valid_binding_path(p))
+    {
+        return AnalyzeResult {
+            ok: false,
+            diagnostics: vec![Diagnostic::error(
+                codes::INVALID_ENVIRONMENT,
+                "Host bindings require the extended environment and valid dot-separated names.",
+            )],
+        };
+    }
     let structural = analyze_structure(project);
     let mut diagnostics = structural.diagnostics;
 
     let written_globals = collect_written_global_names(structural.modules.values());
-    let ambient_roots: HashSet<String> = project.ambient.keys().cloned().collect();
+    let mut ambient_roots: HashSet<String> = project.ambient.keys().cloned().collect();
+    ambient_roots.extend(
+        options
+            .host_bindings
+            .iter()
+            .filter_map(|p| p.split('.').next())
+            .map(str::to_owned),
+    );
     for (key, analysis) in &structural.modules {
         diagnostics.extend(lint_module(key, analysis, &written_globals, &ambient_roots));
-        diagnostics.extend(sw_restrict::scan_module(
+        diagnostics.extend(sw_restrict::scan_module_in_environment(
             key,
             analysis,
             &written_globals,
             Severity::Warning,
+            options.environment,
+            &options.host_bindings,
         ));
+        if let Some(reason) = crate::environment_checks::lexical_reason(
+            &analysis.ast,
+            options.environment,
+            &options.host_bindings,
+        ) {
+            diagnostics.push(
+                Diagnostic::warning(
+                    codes::CONSERVATIVE_MINIFICATION,
+                    format!("Minification will preserve tokens: {reason}."),
+                )
+                .with_module(key.clone()),
+            );
+        }
     }
 
     let parsed_module_keys: HashSet<&str> = structural.modules.keys().map(String::as_str).collect();

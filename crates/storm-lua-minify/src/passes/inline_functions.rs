@@ -1139,7 +1139,9 @@ pub fn inline_one_use_statement_and_tail_functions(
                 continue;
             }
             let binding_name = source.strings.get(res.binding(info.bid).name);
-            if binding_name == "onTick" || binding_name == "onDraw" || info.variadic {
+            if storm_lua_spec::environment::VEHICLE_CALLBACKS.contains(&binding_name)
+                || info.variadic
+            {
                 continue;
             }
             let body_nodes = walk_nodes(&source, info.body);

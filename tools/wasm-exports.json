@@ -31,7 +31,8 @@
     "sle_http",
     "sle_drain_log_records",
     "sle_set_map_host",
-    "sle_mode"
+    "sle_mode",
+    "sle_new_vehicle"
   ],
   "sls": [
     "sls_abi_version",

@@ -43,3 +43,7 @@ A release containing the compiler subpath must additionally run `node tools/buil
 [Playground設計](design/playground.md)に従い、Addon LabのSDK確認部分を`app/`へ移行する。移行完了時に上記Labのビルド・テスト・静的ZIP・通知の参照をPlaygroundへ更新する。現在のアプリとCIはまだLabを使っているため、先に検証手順だけを削除しない。過去版のRelease資産は書き換えない。
 
 PlaygroundのCLI/Webとmakkii.jp公開用Cloudflare Workerは`app/`で管理し、ルートへ専用設定を増やさない。Storm Minの製品・Worker・routeは維持する。正式route・版・権利表示・保存形式を確認してから公開し、設計の採用だけで配備を実行しない。
+
+## 環境契約変更の公開ゲート
+
+環境プロファイル対応版は、既定のpcall/error/print等、onLogの副作用、コンパイラ診断、外部名と_ENVの扱いを変更します。新しい版で公開し、0.1.0を差し替えません。gameとextendedの同じ条件でNative/WASMを検査し、compiler-workerとホストbindingsを梱包済みconsumerから実行します。既存利用者にはextendedの明示指定と、必要なcompiler側hostBindingsの指定を案内します。

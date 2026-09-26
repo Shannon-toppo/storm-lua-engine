@@ -14,7 +14,7 @@ export type MapProvider = (request: MapRequest) => Uint8Array;
 /** 戻り値が1つの場合でも結果リストが必要です。[] は戻り値なし、[null] は nil 1つを意味します。 */
 export type ServerFunction = (...args: LuaValue[]) => readonly LuaValue[];
 export type ServerFunctions = Readonly<Record<string,ServerFunction>>;
-interface Services { readonly server?: ServerFunctions; readonly map?: MapProvider }
+interface Services { readonly server?: ServerFunctions; readonly functions?: ServerFunctions; readonly map?: MapProvider }
 const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8',{fatal:true});
 function finite(value: unknown, name: string): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError(`Invalid ${name}`);
@@ -47,10 +47,11 @@ export class HostDispatcher {
     const service = this.#services.get(key);
     if (!service) throw new EngineError(6,'No host services registered for this VM');
     const request = object(JSON.parse(decoder.decode(bytes)) as unknown);
-    if (request['kind'] === 'server') {
+    if (request['kind'] === 'server' || request['kind'] === 'binding') {
       const name = request['name'];
-      if (typeof name !== 'string' || !service.server || !Object.hasOwn(service.server,name)) throw new EngineError(6,'Server function is not implemented by this host');
-      const callback = service.server[name];
+      const functions = request['kind'] === 'server' ? service.server : service.functions;
+      if (typeof name !== 'string' || !functions || !Object.hasOwn(functions,name)) throw new EngineError(6,'Server function is not implemented by this host');
+      const callback = functions[name];
       if (typeof callback !== 'function') throw new TypeError('Invalid server callback');
       const results = callback(...decodeLuaValues(request['args']));
       requireSynchronous(results);

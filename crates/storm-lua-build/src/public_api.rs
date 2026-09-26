@@ -16,11 +16,7 @@ use storm_lua_minify::config::{
 };
 use storm_lua_minify::pass_ids::{OPTIMIZATION_PASS_IDS, PASS_RECORD_NAMES};
 use storm_lua_minify::search::{compile_code, CandidateSize, CompileCodeResult, SearchStats};
-use storm_lua_syntax::ast::Ast;
-use storm_lua_syntax::ast::Node;
-use storm_lua_syntax::ast::NodeId;
-use storm_lua_syntax::ast_utils::walk;
-use storm_lua_syntax::parser::{parse_source, parse_source_with_positions, NodePositions};
+use storm_lua_syntax::parser::{parse_source, parse_source_with_positions};
 use storm_lua_syntax::print::token_minify;
 
 /// Optimization pipeline selection; numeric precision is configured separately.
@@ -93,6 +89,12 @@ pub struct ApiPropertyConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiCompileOptions {
+    /// Game-facing or explicitly extended Lua environment.
+    #[serde(default)]
+    pub environment: storm_lua_spec::environment::EnvironmentProfile,
+    /// Host function/value paths, matching the runtime binding configuration.
+    #[serde(default)]
+    pub host_bindings: Vec<String>,
     /// Language/API target. Addon optimization is not implemented in this release.
     pub target: Option<storm_lua_analysis::CompilerTarget>,
     /// Optimization pipeline selection.
@@ -119,6 +121,20 @@ pub struct ApiCompileOptions {
 impl ApiCompileOptions {
     /// Resolve settings and reject unknown or retired optimization identifiers.
     pub fn to_core(&self) -> Result<CompileOptions, String> {
+        if !self.host_bindings.is_empty()
+            && self.environment != storm_lua_spec::environment::EnvironmentProfile::Extended
+        {
+            return Err(
+                "invalid-environment: host bindings require the extended environment".into(),
+            );
+        }
+        if self
+            .host_bindings
+            .iter()
+            .any(|p| !storm_lua_spec::environment::valid_binding_path(p))
+        {
+            return Err("invalid-environment: invalid host binding path".into());
+        }
         let mut pass_toggles = BTreeMap::new();
         for (key, value) in &self.pass_toggles {
             if let Some(&id) = OPTIMIZATION_PASS_IDS.iter().find(|&&id| id == key) {
@@ -150,6 +166,8 @@ impl ApiCompileOptions {
             })
         };
         Ok(CompileOptions {
+            environment: self.environment,
+            host_bindings: self.host_bindings.clone(),
             mode: match self.mode.unwrap_or(ApiCompileMode::Smallest) {
                 ApiCompileMode::Safe => CompileMode::Safe,
                 ApiCompileMode::Smallest => CompileMode::Smallest,
@@ -347,6 +365,14 @@ pub struct ApiCompileResult {
     pub zero_cost_newlines: Option<u32>,
 }
 
+fn options_error_code(error: &str) -> &'static str {
+    if error.starts_with("invalid-environment:") {
+        codes::INVALID_ENVIRONMENT
+    } else {
+        codes::UNKNOWN_OPTIMIZATION_PASS
+    }
+}
+
 impl ApiCompileResult {
     fn failure(source: &str, error: String) -> Self {
         let diagnostics = failure_diagnostics(source, &error);
@@ -355,10 +381,7 @@ impl ApiCompileResult {
 
     /// Return an invalid configuration without compiling or executing the source.
     pub fn invalid_options(error: String) -> Self {
-        let diagnostics = vec![Diagnostic::error(
-            codes::UNKNOWN_OPTIMIZATION_PASS,
-            error.clone(),
-        )];
+        let diagnostics = vec![Diagnostic::error(options_error_code(&error), error.clone())];
         Self::with_error(error, diagnostics)
     }
 
@@ -407,66 +430,40 @@ fn failure_diagnostics(source: &str, error: &str) -> Vec<Diagnostic> {
 
 /// `compile()` の既知ハザード診断。位置サイドテーブル付きで再パースする
 /// （検索ホットパスの `parse_source` とは別経路。`success()` で1回だけ呼ばれる非ホットパス）。
-fn detect_hazards(source: &str) -> Result<Vec<Diagnostic>, String> {
-    let (ast, root, positions) =
-        parse_source_with_positions(source).map_err(|error| error.to_string())?;
-    Ok(range_diagnostics(&ast, root, &positions))
-}
-
-fn range_diagnostics(ast: &Ast, root: NodeId, positions: &NodePositions) -> Vec<Diagnostic> {
-    let range_of = |id: NodeId| positions.get(id).map(|(line, col)| Range::point(line, col));
-    let mut diagnostics = Vec::new();
-    walk(ast, root, &mut |id| match ast.node(id) {
-        Node::Name(symbol) if ast.strings.get(*symbol) == "_ENV" => diagnostics.push(
-            Diagnostic::warning(
-                codes::ENV_ACCESS,
-                "_ENV access disables closed-world global assumptions.",
-            )
-            .with_range(range_of(id)),
-        ),
-        Node::Call(function, _, _) => {
-            if let Node::Name(symbol) = ast.node(*function) {
-                let name = ast.strings.get(*symbol);
-                if matches!(name, "rawget" | "rawset") {
-                    diagnostics.push(
-                        Diagnostic::warning(
-                            codes::DYNAMIC_TABLE_KEY,
-                            format!(
-                                "{name} uses a dynamic key; affected tables are excluded from field transformations."
-                            ),
-                        )
-                        .with_range(range_of(id)),
-                    );
-                }
-                if matches!(
-                    name,
-                    "load"
-                        | "loadstring"
-                        | "setmetatable"
-                        | "getmetatable"
-                        | "pcall"
-                        | "xpcall"
-                        | "print"
-                ) {
-                    diagnostics.push(
-                        Diagnostic::warning(
-                            codes::UNSUPPORTED_API_CALL,
-                            format!("{name} is unavailable or unsupported in Stormworks."),
-                        )
-                        .with_range(range_of(id)),
-                    );
-                }
-            }
-        }
-        _ => {}
-    });
-    diagnostics
+fn detect_hazards(source: &str, options: &CompileOptions) -> Result<Vec<Diagnostic>, String> {
+    let (ast, root, positions) = parse_source_with_positions(source).map_err(|e| e.to_string())?;
+    let mut diagnostics = storm_lua_analysis::environment_checks::diagnostics(
+        &ast,
+        root,
+        Some(&positions),
+        options.environment,
+        &options.host_bindings,
+        &Default::default(),
+        Severity::Error,
+        None,
+    );
+    if let Some(reason) = storm_lua_analysis::environment_checks::lexical_reason(
+        &ast,
+        options.environment,
+        &options.host_bindings,
+    ) {
+        let range = ast.nodes.iter().enumerate().find_map(|(id,node)| {
+            if matches!(node, storm_lua_syntax::Node::Name(symbol) if ast.strings.get(*symbol)=="_ENV") {
+                positions.get(id as u32).map(|(line,col)| Range::point(line,col))
+            } else { None }
+        });
+        diagnostics.push(Diagnostic::warning(codes::CONSERVATIVE_MINIFICATION,
+            format!("Token-preserving minification only: {reason}. Names, literals, globals, token line positions and evaluation order are unchanged; property specialization and AST passes are not applied.")).with_range(range));
+    }
+    Ok(diagnostics)
 }
 
 fn search_stats(stats: SearchStats, options: &CompileOptions) -> ApiSearchStats {
     let satisficing = options.target_size.is_some();
     ApiSearchStats {
-        mode: if satisficing {
+        mode: if stats.winner_structural == "lexical" {
+            "lexical"
+        } else if satisficing {
             "satisficing"
         } else if options.search_mode == SearchMode::Fast {
             "fast"
@@ -510,10 +507,14 @@ fn search_stats(stats: SearchStats, options: &CompileOptions) -> ApiSearchStats 
 }
 
 fn success(source: &str, options: &CompileOptions, result: CompileCodeResult) -> ApiCompileResult {
-    let diagnostics = match detect_hazards(source) {
+    let diagnostics = match detect_hazards(source, options) {
         Ok(diagnostics) => diagnostics,
         Err(error) => return ApiCompileResult::failure(source, error),
     };
+    if let Some(error) = diagnostics.iter().find(|d| d.severity == Severity::Error) {
+        return ApiCompileResult::with_error(error.message.clone(), diagnostics);
+    }
+    let lexical = result.stats.winner_structural == "lexical";
     let original = source.encode_utf16().count();
     let baseline = token_minify(source)
         .map(|value| value.encode_utf16().count())
@@ -560,13 +561,13 @@ fn success(source: &str, options: &CompileOptions, result: CompileCodeResult) ->
                 let exact_safe_subset_enabled = id == "constant-folding"
                     && options.numeric_mode == NumericMode::Exact
                     && pass_enabled(&options.pass_toggles, id);
-                !pass_enabled(&resolved_toggles, id) && !exact_safe_subset_enabled
+                lexical || (!pass_enabled(&resolved_toggles, id) && !exact_safe_subset_enabled)
             })
             .map(|&id| id.to_string())
             .collect(),
         assumptions: Some(ApiAssumptions {
-            finite_numbers: options.mode == CompileMode::Smallest,
-            integer_float_subtype_may_change: options.mode == CompileMode::Smallest,
+            finite_numbers: !lexical && options.mode == CompileMode::Smallest,
+            integer_float_subtype_may_change: !lexical && options.mode == CompileMode::Smallest,
             numeric_mode: if options.numeric_mode == NumericMode::Exact {
                 "exact"
             } else {
@@ -577,10 +578,17 @@ fn success(source: &str, options: &CompileOptions, result: CompileCodeResult) ->
                 rel: tolerance.rel,
             },
         }),
-        property_mode: Some(match options.property.as_ref().map(|value| value.mode) {
-            Some(PropertyMode::Hardcode) => "hardcode",
-            _ => "runtime",
-        }),
+        property_mode: Some(
+            match options
+                .property
+                .as_ref()
+                .filter(|_| !lexical)
+                .map(|value| value.mode)
+            {
+                Some(PropertyMode::Hardcode) => "hardcode",
+                _ => "runtime",
+            },
+        ),
         property_reads_hardcoded: Some(result.property_reads_hardcoded),
         zero_cost_newlines: Some(result.zero_cost_newlines),
     }
@@ -592,6 +600,14 @@ pub fn finish_compile_result(
     options: &CompileOptions,
     result: Result<CompileCodeResult, String>,
 ) -> ApiCompileResult {
+    match detect_hazards(source, options) {
+        Ok(diagnostics) => {
+            if let Some(error) = diagnostics.iter().find(|d| d.severity == Severity::Error) {
+                return ApiCompileResult::with_error(error.message.clone(), diagnostics);
+            }
+        }
+        Err(error) => return ApiCompileResult::failure(source, error),
+    }
     match result {
         Ok(result) => success(source, options, result),
         Err(error) => ApiCompileResult::failure(source, error),
@@ -802,7 +818,7 @@ pub fn compile_project(
         Ok(options) => options,
         Err(error) => {
             return ApiProjectCompileResult::structural_failure(vec![Diagnostic::error(
-                codes::UNKNOWN_OPTIMIZATION_PASS,
+                options_error_code(&error),
                 error,
             )])
         }
@@ -823,12 +839,15 @@ pub fn compile_project(
     let structural = analyze_structure(project);
     let written_globals = collect_written_global_names(structural.modules.values());
     for (key, analysis) in &structural.modules {
-        link.diagnostics.extend(sw_restrict::scan_module(
-            key,
-            analysis,
-            &written_globals,
-            Severity::Error,
-        ));
+        link.diagnostics
+            .extend(sw_restrict::scan_module_in_environment(
+                key,
+                analysis,
+                &written_globals,
+                Severity::Error,
+                core_options.environment,
+                &core_options.host_bindings,
+            ));
     }
     // ok/失敗判定は entry から到達するモジュールの error のみで決める（タスク2）。
     // 到達不能モジュールの error は診断に残したまま、リンクは成功扱いを続ける。
@@ -1153,12 +1172,12 @@ mod tests {
         let diag = result
             .diagnostics
             .iter()
-            .find(|d| d.code == codes::ENV_ACCESS)
-            .expect("env-access diagnostic");
+            .find(|d| d.code == codes::CONSERVATIVE_MINIFICATION)
+            .expect("conservative-minification diagnostic");
         assert_eq!(diag.module.as_deref(), Some("util"));
         let range = diag
             .range
-            .expect("env-access diagnostic should carry a range");
+            .expect("conservative-minification diagnostic should carry a range");
         assert_eq!(range.line, 2, "_ENV appears on util's 2nd source line");
     }
 

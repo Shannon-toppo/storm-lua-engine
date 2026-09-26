@@ -57,10 +57,10 @@ test('raw foreign/stale handles, uploads and bounds are rejected',()=>{
   }finally{replacement.dispose();}
 });
 test('property initialization, f64 arithmetic and f32 I/O are separate',()=>{
-  const vm=runtime.createVehicle({properties:{gain:16777217,raw:new Uint8Array([0,255])},devLogs:true});
+  const vm=runtime.createVehicle({properties:{gain:16777217,raw:new Uint8Array([0,255])}});
   try{
     assert.equal(vm.load(`local gain=property.getNumber("gain")
-function onTick() output.setNumber(1,input.getNumber(1)) output.setNumber(2,gain-16777216) output.setNumber(3,16777217.0) print(property.getText("raw")) end`),'completed');
+function onTick() output.setNumber(1,input.getNumber(1)) output.setNumber(2,gain-16777216) output.setNumber(3,16777217.0) debug.log(property.getText("raw")) end`),'completed');
     vm.io.inputNumbers[0]=16777217;assert.equal(vm.tick(),'completed');
     assert.deepEqual(Array.from(vm.io.outputNumbers.subarray(0,3)),[16777216,1,16777216]);
     assert.deepEqual(vm.drainLogs(),[new Uint8Array([0,255])]);

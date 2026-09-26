@@ -623,6 +623,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "storm-lua-spec",
  "storm-lua-syntax",
 ]
 
@@ -642,6 +643,7 @@ dependencies = [
  "sourcemap",
  "storm-lua-analysis",
  "storm-lua-minify",
+ "storm-lua-spec",
  "storm-lua-syntax",
 ]
 
@@ -690,6 +692,7 @@ dependencies = [
  "serde",
  "serde_json",
  "storm-lua-analysis",
+ "storm-lua-spec",
  "storm-lua-syntax",
  "web-time",
 ]
@@ -697,6 +700,9 @@ dependencies = [
 [[package]]
 name = "storm-lua-spec"
 version = "0.1.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "storm-lua-syntax"
@@ -711,6 +717,7 @@ name = "storm-lua-vm"
 version = "0.1.0"
 dependencies = [
  "mlua",
+ "storm-lua-spec",
 ]
 
 [[package]]

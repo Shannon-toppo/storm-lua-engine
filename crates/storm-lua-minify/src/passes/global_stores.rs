@@ -1,13 +1,6 @@
-//! 未 write グローバルの nil 化（TS `passes/global-stores.ts` の `propagateUnwrittenGlobalsAsNil`）。
-//!
-//! 読み出し専用のグローバル参照 x をリテラル nil に置換しても意味が保存されるのは、
-//! 「x が必ず nil を保持している」ことを証明できる場合のみ。本 pass は以下で保証する:
-//!   1. `_ENV` / `rawget` / `rawset` / `load` / `loadstring` が使われていない（動的 global access が無い）。
-//!   2. 対象 binding は `global` かつ !fixed かつ functionNode を持たず、スクリプト内で一度も write されていない。
-//!   3. Stormworks ランタイムで、スクリプト側の write 無しで非 nil になりうる global は
-//!      Resolver が fixed と表現する組み込み名（API_ROOTS ∪ RESERVED）だけ。
-//!
-//! よって条件 2 を満たす読み出しは実行時に必ず nil であり、置換は値・副作用とも保存する。
+//! Propagate only globals certified absent by the selected game contract.
+//! Unknown external bindings are not inferred to be nil from missing source writes.
+//! The whole-program pipeline is bypassed for explicit _ENV access or extended hosts.
 
 use crate::pass::PassResult;
 use storm_lua_analysis::resolver::{resolve, BindingKind, Resolution};
@@ -86,7 +79,13 @@ fn propagate_unwritten_globals_as_nil_impl(
         if i == 0 {
             continue;
         }
-        if b.kind == BindingKind::Global && !b.fixed && b.function_node.is_none() && !written[i] {
+        if b.kind == BindingKind::Global
+            && !b.fixed
+            && b.function_node.is_none()
+            && !written[i]
+            && storm_lua_spec::environment::EnvironmentProfile::Game
+                .is_unavailable(ast.strings.get(b.name))
+        {
             nil_globals[i] = true;
         }
     }
@@ -700,7 +699,7 @@ mod tests {
             .map(|index| format!("a{index}"))
             .collect::<Vec<_>>()
             .join(",");
-        let source = format!("local {names}\nwritten=1\nreturn missing");
+        let source = format!("local {names}\nwritten=1\nreturn pcall");
         let (mut ast, root) = parse_source(&source).expect("parse ok");
         let res = propagate_unwritten_globals_as_nil(&mut ast, root);
         assert_eq!(res.saved, Some(1));

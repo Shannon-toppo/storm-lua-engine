@@ -575,3 +575,52 @@ pub fn token_minify(source: &str) -> Result<String, crate::lexer::LexError> {
     }
     Ok(out)
 }
+
+/// Remove comments and redundant separators without rewriting names, literals, or line endings.
+/// Preserving token line positions also preserves Lua error messages observed through pcall.
+/// Reflection and host overrides use this path instead of whole-program transformations.
+pub fn lexical_minify(source: &str) -> Result<String, crate::lexer::LexError> {
+    use crate::lexer::{Lexer, TokenKind};
+    let tokens = Lexer::new(source).all()?;
+    let compact_with = |spaced: bool| {
+        let mut output = String::with_capacity(source.len());
+        let mut end = 0;
+        for token in tokens.iter().filter(|t| t.k != TokenKind::Eof) {
+            let gap = &source[end..token.p];
+            let before = output.len();
+            output.extend(gap.chars().filter(|c| matches!(c, '\n' | '\r')));
+            if before == output.len()
+                && !output.is_empty()
+                && (spaced || needs_sep(&output, &token.v))
+            {
+                output.push(' ');
+            }
+            output.push_str(&token.v);
+            end = token.p + token.v.len();
+        }
+        output.extend(source[end..].chars().filter(|c| matches!(c, '\n' | '\r')));
+        output
+    };
+    let mut compact = compact_with(false);
+    let expected: Vec<_> = tokens
+        .iter()
+        .filter(|t| t.k != TokenKind::Eof)
+        .map(|t| (&t.k, t.v.as_str(), t.line))
+        .collect();
+    let matches = Lexer::new(&compact).all().is_ok_and(|actual| {
+        actual
+            .iter()
+            .filter(|t| t.k != TokenKind::Eof)
+            .map(|t| (&t.k, t.v.as_str(), t.line))
+            .eq(expected.iter().copied())
+    });
+    // Multi-character delimiters can require an explicit boundary. This branch
+    // uses the same exact tokens and original line breaks, not a second parser.
+    if !matches {
+        compact = compact_with(true);
+    }
+    if compact.encode_utf16().count() > source.encode_utf16().count() {
+        return Ok(source.to_owned());
+    }
+    Ok(compact)
+}

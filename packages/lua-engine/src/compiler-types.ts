@@ -1,9 +1,10 @@
+import type { EnvironmentProfile } from './environment.js';
 /** Compiler data contracts. Compilation is synchronous after WASM initialization; hosts own scheduling. */
 export type CompilerTarget = 'vehicle';
 export type CompileMode = 'safe' | 'smallest';
 export type NumericMode = 'tolerant' | 'exact';
 export type SearchMode = 'exhaustive' | 'fast';
-export type SearchResultMode = SearchMode | 'satisficing';
+export type SearchResultMode = SearchMode | 'satisficing' | 'lexical';
 
 export interface NumericTolerance {
   abs: number;
@@ -16,6 +17,8 @@ export interface PropertyConfig {
   texts?: Record<string, string>;
 }
 export interface CompileOptions {
+  environment?: EnvironmentProfile;
+  hostBindings?: string[];
   /** Vehicle only in this release. Addon compilation is explicitly unsupported. */
   target?: CompilerTarget;
   mode?: CompileMode;
@@ -143,6 +146,8 @@ export type AmbientMember =
   { kind: 'module'; source: string } | { kind: 'environmentOnly' };
 
 export interface AnalyzeOptions {
+  environment?: EnvironmentProfile;
+  hostBindings?: string[];
   target?: CompilerTarget;
   /** Diagnostic codes to suppress. `severity: 'error'` codes cannot be suppressed. */
   disabledRules?: string[];

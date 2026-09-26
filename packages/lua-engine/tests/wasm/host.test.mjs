@@ -33,14 +33,14 @@ test('synchronous callbacks cannot reenter their own VM or another VM in the sam
 });
 test('automatic logs preserve bytes on failure and surface sink errors separately',()=>{
   const records=[];
-  const vm=engine.createVehicle({onLog:record=>records.push(record)});
+  const vm=engine.createVehicle({environment:'extended',onLog:record=>records.push(record)});
   try {
     assert.throws(()=>vm.load('print(string.char(0,255));debug.log("before error");error("script failed")'),error=>error.code===1&&error.message.includes('script failed'));
     assert.deepEqual(records.map(r=>r.source),['print','debug.log']);assert.deepEqual(records[0].bytes,new Uint8Array([0,255]));
     assert.deepEqual(vm.drainLogRecords(),[]);
   }finally{vm.dispose();}
   const sinkFailure=new Error('sink failed'),attempted=[];
-  const broken=engine.createAddon({onLog:record=>{attempted.push(record);throw sinkFailure;}});
+  const broken=engine.createAddon({environment:'extended',onLog:record=>{attempted.push(record);throw sinkFailure;}});
   try {
     assert.throws(()=>broken.load('print("one");debug.log("two");error("lua failed")'),error=>error instanceof AggregateError&&error.errors[0].code===1&&error.errors[1] instanceof AggregateError);
     assert.equal(attempted.length,2);
@@ -56,7 +56,7 @@ test('addon suspension preserves lifecycle and HTTP tokens; reload rejects old d
   const vm=engine.createAddon({newWorld:false,savedata:api.luaTable({count:41n})});
   try {
     vm.setBreakpoints([{source:'=paused-addon',line:2}]);
-    assert.equal(vm.load('g_savedata={count=999}\ng_savedata.count=1000\nfunction onCreate(new) assert(not new and g_savedata.count==41);server.httpGet(8080,"/wait") end\nfunction onTick()\n local n=1\n n=n+1\nend\nfunction httpReply(p,q,r) g_savedata.reply=r end','=paused-addon'),'suspended');
+    assert.equal(vm.load('local function assert(v)if not v then local fail=nil;fail()end end;g_savedata={count=999}\ng_savedata.count=1000\nfunction onCreate(new) assert(not new and g_savedata.count==41);server.httpGet(8080,"/wait") end\nfunction onTick()\n local n=1\n n=n+1\nend\nfunction httpReply(p,q,r) g_savedata.reply=r end','=paused-addon'),'suspended');
     assert.throws(()=>vm.start(),error=>error.code===5);assert.throws(()=>vm.savedata(),error=>[4,5].includes(error.code));
     const table=vm.evaluateWatch('g_savedata');assert.equal(table.kind,'table');
     vm.setBreakpoints([]);vm.resume();vm.start();
@@ -80,7 +80,7 @@ test('addon limits and zero-length source reload work without a vehicle I/O bloc
 test('Promise-returning log sinks fail synchronously without unhandled rejection',()=>{
   for(const onLog of [async()=>{},async()=>{throw new Error('async sink failed');}]) {
     const vm=engine.createVehicle({onLog});
-    try {assert.throws(()=>vm.load('print("entry")'),error=>error instanceof AggregateError && error.errors[0] instanceof TypeError);}
+    try {assert.throws(()=>vm.load('debug.log("entry")'),error=>error instanceof AggregateError && error.errors[0] instanceof TypeError);}
     finally {vm.dispose();}
   }
 });

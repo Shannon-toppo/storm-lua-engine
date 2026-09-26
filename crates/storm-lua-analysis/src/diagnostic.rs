@@ -102,6 +102,11 @@ impl Diagnostic {
 
 /// §7.1 コードカタログ v1。実装済み/未実装を問わず、意図した採番の正本をここへ集約する。
 pub mod codes {
+    /// Reflection/host semantics require exact-token compaction, not whole-program transformations.
+    pub const CONSERVATIVE_MINIFICATION: &str = "conservative-minification";
+    /// Invalid combination of environment profile and host binding settings.
+    pub const INVALID_ENVIRONMENT: &str = "invalid-environment";
+
     /// Requested optimization identifier is unknown or has been removed.
     pub const UNKNOWN_OPTIMIZATION_PASS: &str = "unknown-optimization-pass";
     // --- プロジェクト構造 (error) ---

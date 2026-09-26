@@ -10,54 +10,23 @@
 //! - `compile_project()` → `Severity::Error`（既存の「error が1件でもあれば ok:false」に乗る。
 //!   Minify を要求された場合は失敗させる）
 //!
-//! 単一ソース legacy `compile()` は対象外（モジュール分割 API のみが対象）。
+//! 標準機能の可否は単一ソース・プロジェクト双方の共通environment契約で検査する。
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
 use crate::diagnostic::{codes, Diagnostic, Range, Severity};
 use crate::project::ModuleAnalysis;
-use crate::resolver::resolve;
 use storm_lua_syntax::ast::{Ast, Node, NodeId};
 use storm_lua_syntax::ast_utils::for_each_child_key;
 use storm_lua_syntax::numeric::decode_lua_string;
 use storm_lua_syntax::parser::NodePositions;
 
-/// 標準 Lua ビルトインとして既知だが、Stormworks サンドボックス
-/// （`resolver::API_ROOTS`）には存在しないグローバル名のカタログ。
-///
-/// - `require` は含めない。stormmin のモジュールシステムがコンパイル時に静的展開するため、
-///   実行時グローバルとして残らない（`require_scan` が別途 top-level/文字列リテラル制約を検証する）。
-/// - `error` / `assert` は Stormworks 実機で実際に使えるかを断定できなかったため、
-///   保守的にこのリストへ含めない（要確認。誤って未対応と決めつけるより、リンターが
-///   何も言わない方が安全という判断）。
-pub const UNAVAILABLE_LUA_BUILTINS: &[&str] = &[
-    "print",
-    "pcall",
-    "xpcall",
-    "setmetatable",
-    "getmetatable",
-    "rawget",
-    "rawset",
-    "rawequal",
-    "rawlen",
-    "load",
-    "loadstring",
-    "loadfile",
-    "dofile",
-    "unpack",
-    "os",
-    "io",
-    "coroutine",
-    "collectgarbage",
-    "debug",
-    "package",
-];
+/// Known absent game-facing globals; shared with runtime environment construction.
+pub use storm_lua_spec::environment::GAME_UNAVAILABLE as UNAVAILABLE_LUA_BUILTINS;
 
-/// `name` が既知の Stormworks 非搭載ビルトインか。
-/// `lint::undefined_global_diagnostics` はこの名前を対象外にし（`sw-unavailable-global` と
-/// 二重発報しないため）、判定はこの関数のみが正本になる。
+/// Whether a standard global is absent from the game profile.
 pub fn is_unavailable_builtin(name: &str) -> bool {
-    UNAVAILABLE_LUA_BUILTINS.contains(&name)
+    storm_lua_spec::environment::EnvironmentProfile::Game.is_unavailable(name)
 }
 
 fn diagnostic(
@@ -85,33 +54,16 @@ fn unavailable_global_diagnostics(
     written_globals: &HashSet<String>,
     severity: Severity,
 ) -> Vec<Diagnostic> {
-    let resolution = resolve(&analysis.ast, analysis.root);
-    let mut out = Vec::new();
-    for &(symbol, bid) in &resolution.globals {
-        let name = analysis.ast.strings.get(symbol);
-        if !is_unavailable_builtin(name) || written_globals.contains(name) {
-            continue;
-        }
-        for (node_id, node_bid) in resolution.node_bid.iter().enumerate() {
-            if *node_bid != Some(bid) || resolution.node_write[node_id] {
-                continue;
-            }
-            let range = analysis
-                .positions
-                .get(node_id as u32)
-                .map(|(line, col)| Range::point(line, col));
-            out.push(diagnostic(
-                severity,
-                codes::SW_UNAVAILABLE_GLOBAL,
-                format!(
-                    "\"{name}\" is a standard Lua builtin but is not available in the Stormworks sandbox."
-                ),
-                key,
-                range,
-            ));
-        }
-    }
-    out
+    crate::environment_checks::diagnostics(
+        &analysis.ast,
+        analysis.root,
+        Some(&analysis.positions),
+        storm_lua_spec::environment::EnvironmentProfile::Game,
+        &[],
+        written_globals,
+        severity,
+        Some(key),
+    )
 }
 
 /// トップレベルで関数リテラルに束縛される名前のキー。
@@ -461,6 +413,29 @@ pub fn scan_module(
     severity: Severity,
 ) -> Vec<Diagnostic> {
     let mut out = unavailable_global_diagnostics(key, analysis, written_globals, severity);
+    out.extend(on_tick_scope_diagnostics(key, analysis, severity));
+    out
+}
+
+/// Profile-aware restrictions used by both editing diagnostics and project builds.
+pub fn scan_module_in_environment(
+    key: &str,
+    analysis: &ModuleAnalysis,
+    written_globals: &HashSet<String>,
+    severity: Severity,
+    environment: storm_lua_spec::environment::EnvironmentProfile,
+    host_bindings: &[String],
+) -> Vec<Diagnostic> {
+    let mut out = crate::environment_checks::diagnostics(
+        &analysis.ast,
+        analysis.root,
+        Some(&analysis.positions),
+        environment,
+        host_bindings,
+        written_globals,
+        severity,
+        Some(key),
+    );
     out.extend(on_tick_scope_diagnostics(key, analysis, severity));
     out
 }

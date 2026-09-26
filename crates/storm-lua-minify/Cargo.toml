@@ -11,6 +11,7 @@ description = "Vehicle Lua optimization passes and deterministic candidate searc
 workspace = true
 
 [dependencies]
+storm-lua-spec = { workspace = true }
 storm-lua-syntax = { workspace = true }
 storm-lua-analysis = { workspace = true }
 serde = { workspace = true }

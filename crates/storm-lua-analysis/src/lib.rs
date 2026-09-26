@@ -36,3 +36,6 @@ pub enum CompilerTarget {
     #[default]
     Vehicle,
 }
+
+/// Shared environment checks and conservative-compilation requirements.
+pub mod environment_checks;

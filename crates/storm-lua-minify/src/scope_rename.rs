@@ -165,7 +165,7 @@ fn rename_globals(
         if i == 0 {
             continue;
         }
-        if b.fixed {
+        if b.fixed || (b.kind == BindingKind::Global && resolution.binding_write_counts[i] == 0) {
             used.insert(ast.strings.get(b.name).to_string());
         }
     }
@@ -186,7 +186,7 @@ fn rename_globals(
     let mut git = ShortNameIter(&mut gg);
     for id in globals {
         let b = resolution.binding(id);
-        if b.fixed {
+        if b.fixed || resolution.binding_write_counts[id as usize] == 0 {
             names[id as usize] = Some(ast.strings.get(b.name).to_string());
             continue;
         }

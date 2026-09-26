@@ -92,7 +92,13 @@ impl crate::runner::Vm {
     /// 明示的な開発用拡張として print および制限付き debug.log を組み込みます。
     pub fn enable_logs(&mut self) -> Result<(), VmError> {
         self.ensure_idle()?;
-        install(&self.lua, &self.environment, Rc::clone(&self.logs), true)?;
+        if self.environment_profile != storm_lua_spec::environment::EnvironmentProfile::Extended {
+            return Err(VmError::new(
+                ErrorKind::InvalidArgument,
+                "print requires the extended environment; debug.log is already available",
+            ));
+        }
+        // Extended construction already installed print; keep explicit host overrides intact.
         Ok(())
     }
     /// debug.log を標準APIとして提供するプロファイル向けに、debug.log のみを組み込みます。

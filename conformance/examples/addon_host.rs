@@ -24,13 +24,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     let mut addon = Addon::new(AddonConfig {
         server: BTreeMap::from([("announce".to_owned(), announce)]),
-        dev_logs: true,
+        dev_logs: false,
         ..Default::default()
     })?;
     addon.load(
         br#"g_savedata={ticks=0}
 function onCreate(new) server.announce('native','ready');debug.log('started',new) end
-function onTick(dt) g_savedata.ticks=g_savedata.ticks+dt;print('tick',dt) end"#,
+function onTick(dt) g_savedata.ticks=g_savedata.ticks+dt;debug.log('tick',dt) end"#,
         "=native-addon",
     )?;
     addon.start()?;

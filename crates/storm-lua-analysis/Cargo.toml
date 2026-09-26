@@ -11,6 +11,7 @@ description = "Lua binding/effect analysis, logical project validation and diagn
 workspace = true
 
 [dependencies]
+storm-lua-spec = { workspace = true }
 storm-lua-syntax = { workspace = true }
 serde = { workspace = true }
 

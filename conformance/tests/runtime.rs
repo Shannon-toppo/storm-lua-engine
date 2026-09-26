@@ -1,4 +1,6 @@
 //! ランタイムのセマンティクスと敵対的スクリプトに対する制限。ゲームアセットは不要です。
+#[path = "support/assertions.rs"]
+mod assertion_support;
 use std::error::Error;
 use storm_lua_microcontroller::{Microcontroller, MicrocontrollerConfig};
 use storm_lua_spec::{
@@ -45,12 +47,11 @@ fn output_retains_values_and_reset_restarts_lua() -> Result<(), Box<dyn Error>> 
 #[test]
 fn property_updates_do_not_rewrite_lua_locals_and_bytes_survive() -> Result<(), Box<dyn Error>> {
     let mut vm = Microcontroller::new(MicrocontrollerConfig::default())?;
-    vm.enable_dev_logs()?;
     let mut p = PropertyBag::default();
     p.insert(b"x".to_vec(), PropertyValue::Text(vec![0, 255]));
     p.insert(b"n".to_vec(), PropertyValue::Number(2.0));
     vm.set_properties(p.clone())?;
-    vm.load(b"local n=property.getNumber('n');print(property.getText('x'));function onTick()output.setNumber(1,n);output.setNumber(2,property.getNumber('n'))end","=props")?;
+    vm.load(b"local n=property.getNumber('n');debug.log(property.getText('x'));function onTick()output.setNumber(1,n);output.setNumber(2,property.getNumber('n'))end","=props")?;
     assert_eq!(vm.drain_logs(), vec![vec![0, 255]]);
     p.insert(b"n".to_vec(), PropertyValue::Number(3.0));
     vm.set_properties(p)?;
@@ -72,13 +73,18 @@ fn drawing_calls_share_lua_state_but_not_composite_write_access() -> Result<(), 
 }
 #[test]
 fn unsafe_libraries_and_string_dump_are_not_reachable() -> Result<(), Box<dyn Error>> {
-    let mut vm=loaded("assert(os==nil and io==nil and debug==nil and package==nil and require==nil and load==nil and _G==nil and coroutine==nil);assert(string.dump==nil and ('x').dump==nil)")?;
+    let mut vm = Microcontroller::new(Default::default())?;
+    vm.load(&assertion_support::with_assertions(b"assert(os==nil and io==nil and debug.getinfo==nil and type(debug.log)=='function' and package==nil and require==nil and load==nil and _G==nil and coroutine==nil);assert(string.dump==nil and ('x').dump==nil)"),"=test")?;
     assert_eq!(vm.tick(&CompositeSignal::default())?, RunOutcome::Missing);
     Ok(())
 }
 #[test]
 fn protected_calls_preserve_nil_results_and_errors() -> Result<(), Box<dyn Error>> {
-    loaded("local ok,a,b,c=pcall(function()return nil,2,nil end);assert(ok and a==nil and b==2 and c==nil);local yes,e=pcall(function()error('test')end);assert(not yes and type(e)=='string')")?;
+    let mut vm = Microcontroller::new(MicrocontrollerConfig {
+        environment: storm_lua_spec::environment::EnvironmentProfile::Extended,
+        ..Default::default()
+    })?;
+    vm.load(b"local ok,a,b,c=pcall(function()return nil,2,nil end);assert(ok and a==nil and b==2 and c==nil);local yes,e=pcall(function()error('test')end);assert(not yes and type(e)=='string')","=protected")?;
     Ok(())
 }
 #[test]
@@ -91,7 +97,10 @@ fn instruction_limits_cannot_be_caught_forever() -> Result<(), Box<dyn Error>> {
         "while true do xpcall(function()while true do end end,function()return 1 end)end",
     ];
     for source in loops {
-        let mut config = MicrocontrollerConfig::default();
+        let mut config = MicrocontrollerConfig {
+            environment: storm_lua_spec::environment::EnvironmentProfile::Extended,
+            ..Default::default()
+        };
         config.limits.instruction_budget = std::num::NonZeroU64::new(3000).ok_or("budget")?;
         let mut vm = Microcontroller::new(config)?;
         let error = vm

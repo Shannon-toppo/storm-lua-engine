@@ -1,11 +1,16 @@
 //! 検出可能なAPIメタデータと実際にインストールされた関数の一致を保証します。
-use storm_lua_microcontroller::Microcontroller;
+#[path = "support/assertions.rs"]
+mod assertion_support;
+use storm_lua_microcontroller::{Microcontroller, MicrocontrollerConfig};
 use storm_lua_spec::catalog::FUNCTIONS;
 
 #[test]
 fn every_catalog_entry_matches_its_implemented_profile() -> Result<(), Box<dyn std::error::Error>> {
     let mut plain = Microcontroller::new(Default::default())?;
-    let mut developer = Microcontroller::new(Default::default())?;
+    let mut developer = Microcontroller::new(MicrocontrollerConfig {
+        environment: storm_lua_spec::environment::EnvironmentProfile::Extended,
+        ..Default::default()
+    })?;
     developer.enable_dev_logs()?;
     let mut regular = String::new();
     let mut extended = String::new();
@@ -18,8 +23,11 @@ fn every_catalog_entry_matches_its_implemented_profile() -> Result<(), Box<dyn s
             regular.push_str(&format!("assert(type({})=='function')\n", function.path));
         }
     }
-    regular.push_str("assert(print==nil and debug==nil)");
-    plain.load(regular.as_bytes(), "=catalog")?;
+    regular.push_str("assert(print==nil and type(debug.log)=='function' and debug.getinfo==nil)");
+    plain.load(
+        &assertion_support::with_assertions(regular.as_bytes()),
+        "=catalog",
+    )?;
     developer.load(extended.as_bytes(), "=developer-catalog")?;
     Ok(())
 }
@@ -35,7 +43,10 @@ fn addon_catalog_is_distinct_and_all_owned_functions_exist(
         assert!(seen.insert(path));
         script.push_str(&format!("assert(type({path})=='function')\n"));
     }
-    addon.load(script.as_bytes(), "=addon-catalog")?;
+    addon.load(
+        &assertion_support::with_assertions(script.as_bytes()),
+        "=addon-catalog",
+    )?;
     let mut events = std::collections::HashSet::new();
     for callback in storm_lua_spec::addon::EVENTS {
         assert!(events.insert(callback));

@@ -301,3 +301,20 @@ pub extern "C" fn sle_mode(handle: u32) -> u32 {
         })
     }) as u32
 }
+
+/// Create a Vehicle with explicit environment, properties and trusted host binding paths.
+#[allow(unsafe_code)]
+#[no_mangle]
+pub extern "C" fn sle_new_vehicle(
+    instruction_budget: u32,
+    memory_bytes: u32,
+    host_key: u32,
+    pointer: usize,
+    length: u32,
+) -> u32 {
+    bridge::value(|| {
+        bridge::with_upload(pointer, length, |bytes| {
+            services::create_vehicle(instruction_budget, memory_bytes, host_key, bytes)
+        })
+    }) as u32
+}

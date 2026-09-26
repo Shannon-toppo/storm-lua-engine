@@ -25,6 +25,10 @@ pub struct MicrocontrollerConfig {
     pub properties: PropertyBag,
     /// Luaの命令数およびヒープメモリの上限。
     pub limits: ExecutionLimits,
+    /// Script-visible game or explicitly extended environment.
+    pub environment: storm_lua_spec::environment::EnvironmentProfile,
+    /// Explicit host extensions, installed before load and preserved on reset.
+    pub bindings: storm_lua_vm::bindings::HostBindings,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Phase {
@@ -50,11 +54,14 @@ pub struct Microcontroller {
     source: Vec<u8>,
     source_name: String,
     dev_logs: bool,
+    environment: storm_lua_spec::environment::EnvironmentProfile,
+    bindings: storm_lua_vm::bindings::HostBindings,
 }
 impl Microcontroller {
     /// 未開始のコントローラーを作成します。loadを呼び出す前にホストオプションを設定してください。
     pub fn new(config: MicrocontrollerConfig) -> Result<Self, VmError> {
-        let mut vm = Vm::new(config.limits)?;
+        config.bindings.validate(config.environment)?;
+        let mut vm = Vm::with_environment(config.limits, config.environment)?;
         let state = Rc::new(RefCell::new(State {
             input: CompositeSignal::default(),
             output: CompositeSignal::default(),
@@ -65,6 +72,7 @@ impl Microcontroller {
             commands: CommandBuffer::new(65536, 1024 * 1024),
         }));
         vm.configure(|lua, env| bindings::install(lua, env, Rc::clone(&state)))?;
+        vm.install_bindings(&config.bindings)?;
         Ok(Self {
             vm,
             state,
@@ -72,6 +80,8 @@ impl Microcontroller {
             source: Vec::new(),
             source_name: String::new(),
             dev_logs: false,
+            environment: config.environment,
+            bindings: config.bindings,
         })
     }
     /// プロパティがトップレベルで利用可能な状態でソースチャンクを実行します。
@@ -179,6 +189,8 @@ impl Microcontroller {
         let config = MicrocontrollerConfig {
             properties: self.state.borrow().properties.clone(),
             limits: self.limits,
+            environment: self.environment,
+            bindings: self.bindings.clone(),
         };
         let mut next = Self::new(config)?;
         if self.dev_logs {

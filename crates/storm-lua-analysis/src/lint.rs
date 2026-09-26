@@ -71,6 +71,7 @@ fn is_known_global(name: &str, ambient_roots: &HashSet<String>) -> bool {
     api_roots(name)
         || reserved(name)
         || name == "require"
+        || name == "_ENV"
         || ambient_roots.contains(name)
         || is_unavailable_builtin(name)
 }

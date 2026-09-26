@@ -116,6 +116,7 @@ pub struct Vm {
     pub(crate) control: Rc<RefCell<HookControl>>,
     pub(crate) limits: ExecutionLimits,
     failed: bool,
+    pub(crate) environment_profile: storm_lua_spec::environment::EnvironmentProfile,
     pub(crate) logs: Rc<RefCell<crate::logging::LogBuffer>>,
     #[cfg(feature = "debug")]
     pub(crate) debugger: crate::debug::Debugger,
@@ -123,6 +124,16 @@ pub struct Vm {
 impl Vm {
     /// ユーザーコードを実行せずに、許可リスト付きの環境を作成します。
     pub fn new(limits: ExecutionLimits) -> Result<Self, VmError> {
+        Self::with_environment(
+            limits,
+            storm_lua_spec::environment::EnvironmentProfile::Game,
+        )
+    }
+    /// Create an explicit script environment; host debugging is independent from this profile.
+    pub fn with_environment(
+        limits: ExecutionLimits,
+        environment_profile: storm_lua_spec::environment::EnvironmentProfile,
+    ) -> Result<Self, VmError> {
         let lua = create_lua()?;
         if lua.used_memory() > limits.lua_memory_bytes.get() {
             return Err(VmError::new(
@@ -131,9 +142,18 @@ impl Vm {
             ));
         }
         lua.set_memory_limit(limits.lua_memory_bytes.get())?;
-        let environment = crate::sandbox::environment(&lua)?;
+        let environment = crate::sandbox::environment(&lua, environment_profile)?;
         let control = Rc::new(RefCell::new(HookControl::default()));
-        crate::sandbox::protect_calls(&lua, &environment, Rc::clone(&control))?;
+        if environment_profile == storm_lua_spec::environment::EnvironmentProfile::Extended {
+            crate::sandbox::protect_calls(&lua, &environment, Rc::clone(&control))?;
+        }
+        let logs = Rc::default();
+        crate::logging::install(
+            &lua,
+            &environment,
+            Rc::clone(&logs),
+            environment_profile == storm_lua_spec::environment::EnvironmentProfile::Extended,
+        )?;
         #[cfg(feature = "debug")]
         let debugger = crate::debug::Debugger::new(&lua)?;
         Ok(Self {
@@ -143,7 +163,8 @@ impl Vm {
             control,
             limits,
             failed: false,
-            logs: Rc::default(),
+            environment_profile,
+            logs,
             #[cfg(feature = "debug")]
             debugger,
         })

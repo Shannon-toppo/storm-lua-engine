@@ -2,6 +2,10 @@
 
 2026-09-26 — **Storm Lua Engine 0.1.0**。ビークル／AddonのLua実行、CPU描画、デバッガとホストサービスを提供します。変更内容は[CHANGELOG](CHANGELOG.md)、配布方法は[導入ガイド](docs/guide/getting-started.md)を参照してください。
 
+## 環境契約の是正（開発ブランチ）
+
+ゲーム向けgameと明示的extendedを分離し、debug.logとホストデバッガを区別した。onLogはprintを注入しない。単一ソースとプロジェクトの診断を共有し、外部名の改名/nil化を修正。_ENVと拡張環境はトークン・行位置を維持する字句短縮を使う。[環境仕様](docs/specs/environments.md)・[ホストガイド](docs/guide/environments.md)。この契約は公開済み0.1.0へ遡及しない。
+
 ## Compiler SDK統合（実装済み・未公開）
 
 構文・解析・最適化・ビルドの4クレートとcompiler-only WASM adapterを追加した。既存のCLI/Node/Webは同じ実装を利用する。`/compiler`のTypeScript入口はruntimeをロードしない。最適化はVehicleのみ、Addon指定は明示拒否する。

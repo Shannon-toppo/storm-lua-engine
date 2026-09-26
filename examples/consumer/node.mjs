@@ -24,7 +24,7 @@ const vehicle=engine.createVehicle({properties:{Gain:2},onLog,mapProvider:reques
 }});
 try {
   vehicle.load(`local gain=property.getNumber("Gain")
-function onTick() output.setNumber(1,input.getNumber(1)*gain);print("control tick") end
+function onTick() output.setNumber(1,input.getNumber(1)*gain);debug.log("control tick") end
 function onDraw() screen.setMapColorOcean(16,48,80);screen.drawMap(0,0,1);screen.setColor(255,255,255);screen.drawText(1,1,"MAP") end`);
   vehicle.io.inputNumbers[0]=3.5;
   assert.equal(vehicle.tick(),'completed');assert.equal(vehicle.io.outputNumbers[0],7);
@@ -62,7 +62,7 @@ function httpReply(port,request,reply) g_savedata.reply=reply end`);
   for(const request of addon.drainHttpRequests())addon.cancelHttp(request.token);
   addon.destroy();
 } finally {addon.dispose();}
-assert.ok(output.some(record=>record.source==='print'));
+assert.ok(output.some(record=>record.text==='control tick'));
 assert.ok(output.some(record=>record.source==='debug.log'));
 console.log('Consumer example passed: vehicle, addon, host terrain, server calls, logs and save/reload.');
 

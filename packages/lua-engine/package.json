@@ -44,6 +44,10 @@
     "./compiler": {
       "types": "./dist/compiler.d.ts",
       "import": "./dist/compiler.js"
+    },
+    "./compiler-worker": {
+      "types": "./dist/compiler-worker.d.ts",
+      "import": "./dist/compiler-worker.js"
     }
   },
   "scripts": {

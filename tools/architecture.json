@@ -3,7 +3,9 @@
     "role": "product",
     "normal": [],
     "dev": [],
-    "external": []
+    "external": [
+      "serde"
+    ]
   },
   "storm-screen-raster": {
     "role": "product",
@@ -15,7 +17,9 @@
   },
   "storm-lua-vm": {
     "role": "product",
-    "normal": [],
+    "normal": [
+      "storm-lua-spec"
+    ],
     "dev": [],
     "external": [
       "mlua"
@@ -111,7 +115,8 @@
   "storm-lua-analysis": {
     "role": "product",
     "normal": [
-      "storm-lua-syntax"
+      "storm-lua-syntax",
+      "storm-lua-spec"
     ],
     "dev": [],
     "external": [
@@ -123,7 +128,8 @@
     "role": "product",
     "normal": [
       "storm-lua-syntax",
-      "storm-lua-analysis"
+      "storm-lua-analysis",
+      "storm-lua-spec"
     ],
     "dev": [],
     "external": [
@@ -139,7 +145,8 @@
     "normal": [
       "storm-lua-syntax",
       "storm-lua-analysis",
-      "storm-lua-minify"
+      "storm-lua-minify",
+      "storm-lua-spec"
     ],
     "dev": [],
     "external": [

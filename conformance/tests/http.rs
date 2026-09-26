@@ -1,4 +1,6 @@
 //! 両プロファイルにおけるホストHTTPの識別性、順序付け、およびコールバック契約。
+#[path = "support/assertions.rs"]
+mod assertion_support;
 use std::error::Error;
 use storm_lua_addon::Addon;
 use storm_lua_microcontroller::Microcontroller;
@@ -6,9 +8,9 @@ use storm_lua_vm::runner::{RunOutcome, StepMode};
 #[test]
 fn addon_reply_is_once_only_and_reload_invalidates_old_generation() -> Result<(), Box<dyn Error>> {
     let mut addon = Addon::new(Default::default())?;
-    addon.load(br#"g_savedata={count=0}
+    addon.load(&assertion_support::with_assertions(br#"g_savedata={count=0}
 function onCreate() server.httpGet(8080,'/hello') end
-function httpReply(port,request,reply) assert(port==8080 and request=='/hello'); g_savedata.count=g_savedata.count+1;debug.log(reply) end"#,"=http")?;
+function httpReply(port,request,reply) assert(port==8080 and request=='/hello'); g_savedata.count=g_savedata.count+1;debug.log(reply) end"#),"=http")?;
     addon.start()?;
     let request = addon.drain_http_requests().pop().ok_or("missing request")?;
     assert!(addon.drain_http_requests().is_empty());
@@ -31,14 +33,15 @@ function httpReply(port,request,reply) assert(port==8080 and request=='/hello');
 #[test]
 fn vehicle_reply_waits_for_idle_and_keeps_the_token_when_busy() -> Result<(), Box<dyn Error>> {
     let mut vm = Microcontroller::new(Default::default())?;
-    vm.enable_dev_logs()?;
     vm.load(
-        b"async.httpGet(9000,'/status')
+        &assertion_support::with_assertions(
+            b"async.httpGet(9000,'/status')
 function onTick()
 local a=1
 a=a+1
 end
-function httpReply(p,q,r) print(r) end",
+function httpReply(p,q,r) debug.log(r) end",
+        ),
         "=vehicle",
     )?;
     let request = vm.drain_http_requests().pop().ok_or("request")?;

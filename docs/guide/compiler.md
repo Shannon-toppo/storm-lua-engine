@@ -49,7 +49,7 @@ Before creating a complete npm package, build all requested assets and update th
 
 Compilation success and meeting `targetSize` are distinct. Inspect diagnostics, generated `code`, reported `size`, and `search.targetMet` rather than treating a size miss as a parser failure. The host decides whether to export, warn, or reject an oversized artifact. Compilation itself never runs user Lua.
 
-`numericMode: "exact"` and `numericMode: "tolerant"` are different transformation contracts. `mode: "safe"` is not a synonym for exact numeric behavior. Generated artifacts report assumptions and selected options. The initial integration retains the existing deterministic size/target search; it does not claim a newly implemented runtime-optimal objective.
+`numericMode: "exact"` and `numericMode: "tolerant"` are different transformation contracts. `mode: "safe"` is not a synonym for exact numeric behavior. Generated artifacts report assumptions and selected options. Ordinary game-profile compilation retains deterministic size/target search; it does not claim a newly implemented runtime-optimal objective.
 
 A non-minifying project build returns the current line-oriented source map, including source contents. Minifying builds do not claim full original-variable or original-step debugging. The host owns debugger UI and loading/reloading the chosen artifact.
 
@@ -62,3 +62,11 @@ Unregistered and retired pass IDs are configuration errors, whether explicitly e
 See the [integration verification record](../verification/compiler-integration-20260926.md) for executed tests. Source compilation can consume CPU and memory even though it does not execute Lua; hosts own process/Worker lifetime and resource policy. Low-level callers that construct ASTs must preserve valid node IDs and expression/statement shapes. Invalid compiler-internal IR is not silently converted into empty successful output.
 
 The separate Storm Lua Engine: Playground CLI/Web is planned under app/; the existing Storm Min CLI/Web remains maintained. Addon Lab will transfer its SDK demonstration cases into Playground before being removed. See the [Playground design](../design/playground.md) for scope and status. App implementation, hosting, a complete build-of-all-assets release command, and public release/version changes remain follow-up work. No deployment or publication is implied by this development-branch API.
+
+## Environment and reflective inputs
+
+See the [environment guide](environments.md) and [shared contract](../specs/environments.md). `environment` defaults to `game`. `hostBindings` names explicit externally supplied paths and requires `extended`. A missing game builtin is a warning for editing analysis and an error for both single-source minification and project builds. Nil/type probes and local user definitions remain valid.
+
+Read-only external globals are not renamed or assumed nil. `_ENV` access/rebinding and extended hosts use exact-token, line-preserving compaction, reported as `conservative-minification` and `search.mode = "lexical"`. Property hardcoding and AST transforms are not applied on that path. An unmet target remains unmet rather than permitting an unsafe fallback. `exact` alone is not an environment selection.
+
+The compiler-worker subpath supplies an explicitly attached client/server adapter; hosts still create and terminate the Worker.

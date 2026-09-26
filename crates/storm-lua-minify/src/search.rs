@@ -156,6 +156,7 @@ impl PassMask {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CandidateJob {
+    lexical_source: Option<String>,
     variant: Variant,
     aggressive: bool,
     toggles: PassMask,
@@ -167,6 +168,8 @@ pub struct CandidateJob {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchContext {
+    lexical: bool,
+    lexical_target: Option<usize>,
     property_reads_hardcoded: usize,
     core_variants: usize,
     structural_variants: usize,
@@ -245,6 +248,41 @@ pub fn prepare_search(
     prepare_search_with_dedup(source, options, true)
 }
 
+fn prepare_lexical(
+    source: &str,
+    ast: Ast,
+    root: NodeId,
+    options: &CompileOptions,
+) -> Result<(SearchContext, Vec<CandidateJob>), String> {
+    let code = storm_lua_syntax::print::lexical_minify(source).map_err(|e| e.to_string())?;
+    parse_source(&code).map_err(|e| e.to_string())?;
+    Ok((
+        SearchContext {
+            lexical: true,
+            lexical_target: options.target_size,
+            property_reads_hardcoded: 0,
+            core_variants: 0,
+            structural_variants: 1,
+            structural_names: vec!["lexical".into()],
+        },
+        vec![CandidateJob {
+            lexical_source: Some(code),
+            variant: Variant {
+                name: "lexical".into(),
+                ast,
+                root,
+                passes: Vec::new(),
+            },
+            aggressive: false,
+            toggles: PassMask { low: 0, high: 0 },
+            numeric_tolerance: None,
+            exact_safe_constant_folding: false,
+            zero_cost_newlines: false,
+            order_base: 0,
+        }],
+    ))
+}
+
 fn prepare_search_with_dedup(
     source: &str,
     options: &CompileOptions,
@@ -252,6 +290,21 @@ fn prepare_search_with_dedup(
 ) -> Result<(SearchContext, Vec<CandidateJob>), String> {
     options.validate_pass_toggles()?;
     let (parsed_ast, parsed_root) = parse_source(source).map_err(|e| e.to_string())?;
+    storm_lua_analysis::environment_checks::validate(
+        &parsed_ast,
+        parsed_root,
+        options.environment,
+        &options.host_bindings,
+    )?;
+    if storm_lua_analysis::environment_checks::lexical_reason(
+        &parsed_ast,
+        options.environment,
+        &options.host_bindings,
+    )
+    .is_some()
+    {
+        return prepare_lexical(source, parsed_ast, parsed_root, options);
+    }
     let (base_ast, base_root, property_reads_hardcoded) =
         passes::property_reads::transform_property_reads(
             &parsed_ast,
@@ -441,6 +494,7 @@ fn prepare_search_from_base(
         .into_iter()
         .enumerate()
         .map(|(index, variant)| CandidateJob {
+            lexical_source: None,
             variant,
             aggressive,
             toggles: job_toggles,
@@ -452,6 +506,8 @@ fn prepare_search_from_base(
         .collect::<Vec<_>>();
     Ok((
         SearchContext {
+            lexical: false,
+            lexical_target: None,
             property_reads_hardcoded,
             core_variants: core_variants.len(),
             structural_variants: structural_total,
@@ -465,12 +521,40 @@ fn evaluate_candidate_with_verifier(
     job: CandidateJob,
     verify_candidate: &mut Option<&mut dyn FnMut(&str) -> bool>,
 ) -> Result<CandidateBatch, String> {
+    if let Some(code) = job.lexical_source.as_ref() {
+        if let Some(verify) = verify_candidate.as_deref_mut() {
+            if !verify(code) {
+                return Ok(CandidateBatch {
+                    candidates: Vec::new(),
+                    attempted: 1,
+                    parse_rejected: 0,
+                    semantic_rejected: 1,
+                });
+            }
+        }
+        return Ok(CandidateBatch {
+            candidates: vec![Candidate {
+                structural: "lexical".into(),
+                layout: "tokens".into(),
+                code: code.clone(),
+                size: target_char_size(code),
+                order: 0,
+                passes: Vec::new(),
+                aliases: Vec::new(),
+                zero_cost_newlines: 0,
+            }],
+            attempted: 1,
+            parse_rejected: 0,
+            semantic_rejected: 0,
+        });
+    }
     let mut candidates = Vec::<Candidate>::new();
     let mut attempted = 0usize;
     let mut parse_rejected = 0usize;
     let mut semantic_rejected = 0usize;
 
     let CandidateJob {
+        lexical_source: _,
         variant: structural_candidate,
         aggressive,
         toggles,
@@ -958,6 +1042,9 @@ fn select_best_candidates(
         })
         .collect::<Vec<_>>();
     let best = candidates.remove(0);
+    let lexical_target_met = context
+        .lexical_target
+        .is_some_and(|target| best.size <= target);
     Ok(CompileCodeResult {
         code: best.code,
         passes: best.passes,
@@ -976,11 +1063,11 @@ fn select_best_candidates(
             winner_structural: best.structural,
             winner_layout: best.layout,
             candidate_sizes,
-            target_size: None,
-            target_met: false,
+            target_size: context.lexical_target,
+            target_met: lexical_target_met,
             stopped_early: false,
-            checkpoints: 0,
-            stage: None,
+            checkpoints: usize::from(context.lexical),
+            stage: context.lexical.then(|| "lexical".into()),
         },
     })
 }
@@ -1153,6 +1240,8 @@ fn build_satisficing_result(
     stage: &str,
 ) -> Result<CompileCodeResult, String> {
     let context = SearchContext {
+        lexical: false,
+        lexical_target: None,
         property_reads_hardcoded,
         core_variants: 1,
         structural_variants: structural_total,
@@ -1194,6 +1283,35 @@ pub fn try_satisficing(
     let aggressive = options.mode == CompileMode::Smallest;
     let resolved_toggles = resolve_pass_toggles(&options.pass_toggles, options.numeric_mode);
     let (parsed_ast, parsed_root) = parse_source(source).map_err(|error| error.to_string())?;
+    storm_lua_analysis::environment_checks::validate(
+        &parsed_ast,
+        parsed_root,
+        options.environment,
+        &options.host_bindings,
+    )?;
+    if storm_lua_analysis::environment_checks::lexical_reason(
+        &parsed_ast,
+        options.environment,
+        &options.host_bindings,
+    )
+    .is_some()
+    {
+        let (context, jobs) = prepare_lexical(source, parsed_ast, parsed_root, options)?;
+        let batches = jobs
+            .into_iter()
+            .map(evaluate_candidate)
+            .collect::<Result<Vec<_>, _>>()?;
+        let result = select_best(context, batches)?;
+        return Ok(SatisficingAttempt {
+            status: if result.stats.target_met {
+                SatisficingStatus::Satisfied
+            } else {
+                SatisficingStatus::Stopped
+            },
+            result,
+            fallback: None,
+        });
+    }
     let (base_ast, base_root, property_reads_hardcoded) =
         passes::property_reads::transform_property_reads(
             &parsed_ast,
@@ -1423,6 +1541,7 @@ pub fn try_satisficing(
         checkpoint!("structural");
 
         let batch = evaluate_candidate(CandidateJob {
+            lexical_source: None,
             variant,
             aggressive,
             toggles: job_toggles,
@@ -1482,7 +1601,9 @@ pub fn finalize_satisficing_fallback(
     result.stats.target_met = target_char_size(&result.code) <= target_size;
     result.stats.stopped_early = false;
     result.stats.checkpoints += prior_checkpoints;
-    result.stats.stage = Some("full-search".into());
+    if result.stats.winner_structural != "lexical" {
+        result.stats.stage = Some("full-search".into());
+    }
     result
 }
 

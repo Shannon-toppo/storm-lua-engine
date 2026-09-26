@@ -31,6 +31,10 @@ pub struct AddonConfig {
     pub server: BTreeMap<String, HostFunction>,
     /// printを追加します。制限付きのdebug.logはアドオンプロファイルで既定で利用可能です。
     pub dev_logs: bool,
+    /// Script-visible game or explicitly extended environment.
+    pub environment: storm_lua_spec::environment::EnvironmentProfile,
+    /// Explicit host extensions, retained across savedata reload.
+    pub bindings: storm_lua_vm::bindings::HostBindings,
 }
 impl Default for AddonConfig {
     fn default() -> Self {
@@ -41,6 +45,8 @@ impl Default for AddonConfig {
             savedata: None,
             server: BTreeMap::new(),
             dev_logs: false,
+            environment: Default::default(),
+            bindings: Default::default(),
         }
     }
 }
@@ -112,7 +118,25 @@ impl Addon {
                 return Err(invalid("invalid or reserved server function name"));
             }
         }
-        let mut vm = Vm::new(config.limits)?;
+        config.bindings.validate(config.environment)?;
+        for path in config
+            .bindings
+            .values
+            .keys()
+            .chain(config.bindings.functions.keys())
+        {
+            if path == "server"
+                || config.server.keys().any(|name| {
+                    path == &format!("server.{name}")
+                        || path.starts_with(&format!("server.{name}."))
+                })
+            {
+                return Err(invalid(
+                    "host bindings overlap the configured server namespace",
+                ));
+            }
+        }
+        let mut vm = Vm::with_environment(config.limits, config.environment)?;
         if let Some(savedata) = &config.savedata {
             if !matches!(savedata, LuaValue::Table(_)) {
                 return Err(invalid("savedata must be a table"));
@@ -128,7 +152,7 @@ impl Addon {
             http: HttpQueue::new().map_err(http_error)?,
         }));
         vm.configure(|lua, env| bindings::install(lua, env, Rc::clone(&state)))?;
-        vm.enable_debug_log()?;
+        vm.install_bindings(&config.bindings)?;
         if config.dev_logs {
             vm.enable_logs()?;
         }

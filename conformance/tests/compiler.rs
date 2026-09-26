@@ -159,7 +159,13 @@ fn project_build_and_minify_preserve_real_vehicle_io_and_two_draws() -> Result<(
 #[test]
 fn compilation_does_not_execute_top_level_lua() {
     let source = "error('this must run only when a host loads the artifact')";
-    let result = minify(source, &ApiCompileOptions::default());
+    let result = minify(
+        source,
+        &ApiCompileOptions {
+            environment: storm_lua_spec::environment::EnvironmentProfile::Extended,
+            ..Default::default()
+        },
+    );
     assert!(result.ok, "{:?}", result.diagnostics);
     let project = LuaProject {
         entry: "main".into(),
@@ -170,7 +176,10 @@ fn compilation_does_not_execute_top_level_lua() {
         &project,
         &ApiProjectCompileOptions {
             minify: Some(false),
-            ..Default::default()
+            compile: ApiCompileOptions {
+                environment: storm_lua_spec::environment::EnvironmentProfile::Extended,
+                ..Default::default()
+            },
         },
     );
     assert!(result.ok);

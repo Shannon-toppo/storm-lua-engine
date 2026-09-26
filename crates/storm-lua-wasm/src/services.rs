@@ -26,6 +26,86 @@ fn host_error(error: BridgeError) -> VmError {
         error.message,
     )
 }
+fn environment(
+    request: &Value,
+) -> Result<storm_lua_spec::environment::EnvironmentProfile, BridgeError> {
+    match request.get("environment") {
+        None => Ok(Default::default()),
+        Some(value) => serde_json::from_value(value.clone()).map_err(|e| invalid(&e.to_string())),
+    }
+}
+fn bindings(
+    request: &Value,
+    host_key: u32,
+) -> Result<storm_lua_vm::bindings::HostBindings, BridgeError> {
+    let mut result = storm_lua_vm::bindings::HostBindings::default();
+    let Some(input) = request.get("bindings") else {
+        return Ok(result);
+    };
+    if !input.is_object() {
+        return Err(invalid("bindings must be an object"));
+    }
+    if let Some(values) = input.get("values") {
+        for (path, value) in values
+            .as_object()
+            .ok_or_else(|| invalid("binding values must be an object"))?
+        {
+            result
+                .values
+                .insert(path.clone(), value_codec::value(value)?);
+        }
+    }
+    if let Some(functions) = input.get("functions") {
+        for path in functions
+            .as_array()
+            .ok_or_else(|| invalid("binding functions must be a list"))?
+        {
+            let path = path
+                .as_str()
+                .ok_or_else(|| invalid("binding path must be text"))?
+                .to_owned();
+            if host_key == 0 {
+                return Err(invalid("missing host binding provider"));
+            }
+            let name = path.clone();
+            let function: HostFunction = Rc::new(move |args| {
+                let request = json!({"kind":"binding","name":name,"args":args.iter().map(value_codec::encode).collect::<Vec<_>>()});
+                let bytes = host::call(host_key, &request).map_err(host_error)?;
+                let value = codec::parse(&bytes).map_err(host_error)?;
+                value_codec::values(&value).map_err(host_error)
+            });
+            if result.functions.insert(path, function).is_some() {
+                return Err(invalid("duplicate binding path"));
+            }
+        }
+    }
+    result.validate(environment(request)?).map_err(convert)?;
+    Ok(result)
+}
+pub(crate) fn create_vehicle(
+    instructions: u32,
+    memory: u32,
+    host_key: u32,
+    bytes: &[u8],
+) -> Result<usize, BridgeError> {
+    let request = codec::parse(bytes)?;
+    let properties = match request.get("properties") {
+        None => Default::default(),
+        Some(value) => {
+            codec::properties(&serde_json::to_vec(value).map_err(|e| invalid(&e.to_string()))?)?
+        }
+    };
+    let vm = storm_lua_microcontroller::Microcontroller::new(
+        storm_lua_microcontroller::MicrocontrollerConfig {
+            limits: session::limits(instructions, memory)?,
+            properties,
+            environment: environment(&request)?,
+            bindings: bindings(&request, host_key)?,
+        },
+    )
+    .map_err(convert)?;
+    session::insert(Script::Vehicle(Box::new(vm)))
+}
 pub(crate) fn create_addon(
     instructions: u32,
     memory: u32,
@@ -72,6 +152,8 @@ pub(crate) fn create_addon(
         savedata,
         server,
         dev_logs: false,
+        environment: environment(&request)?,
+        bindings: bindings(&request, host_key)?,
     };
     session::insert(Script::Addon(Box::new(
         Addon::new(config).map_err(convert)?,

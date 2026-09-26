@@ -1,3 +1,4 @@
+import { environmentWire } from './environment.js';
 import { adaptModule, Bridge, EngineError, object, unsigned, type Backend, type Outcome } from './bridge.js';
 import { RawIoView, type CompositeIoViews } from './raw.js';
 import { FrameLease } from './frame.js';
@@ -29,6 +30,7 @@ export class VehicleVm extends ScriptVm {
 function budgets(options: ScriptOptions): [number,number] {
   if (options.onLog !== undefined && typeof options.onLog !== 'function') throw new TypeError('onLog must be a function');
   if (options.devLogs !== undefined && typeof options.devLogs !== 'boolean') throw new TypeError('devLogs must be Boolean');
+  if (options.devLogs && options.environment !== 'extended') throw new TypeError('devLogs/print requires the extended environment');
   return [unsigned(options.instructionBudget ?? 1_000_000,'instructionBudget'),unsigned(options.memoryBytes ?? 8*1024*1024,'memoryBytes')];
 }
 export class LuaEngine {
@@ -43,37 +45,40 @@ export class LuaEngine {
   /** ユーザーコードが実行される前に、プロパティ、ログ記録、およびマッププロバイダが構成されます。 */
   createVehicle(options: VehicleOptions = {}): VehicleVm {
     const [instructions,memory] = budgets(options);
+    const environment = environmentWire(options.environment, options.bindings);
     let key = 0, handle = 0;
     try {
-      if (options.mapProvider !== undefined) {
-        if (typeof options.mapProvider !== 'function') throw new TypeError('mapProvider must be a function');
+      if (options.mapProvider !== undefined || Object.keys(options.bindings?.functions ?? {}).length) {
+        if (options.mapProvider !== undefined && typeof options.mapProvider !== 'function') throw new TypeError('mapProvider must be a function');
         if (!this.hosts || !(this.bridge.capabilities & 16)) throw new EngineError(6,'This runtime cannot call JS host services');
-        key = this.hosts.register({map:options.mapProvider});
+        key = this.hosts.register({...(options.mapProvider === undefined ? {} : {map: options.mapProvider}), ...(options.bindings?.functions === undefined ? {} : {functions: options.bindings.functions})});
       }
-      handle = this.bridge.query('new',instructions,memory);
+      const config = encoder.encode(JSON.stringify({...environment, properties: JSON.parse(decoder.decode(encodeProperties(options.properties ?? {}))) as unknown}));
+      handle = this.bridge.upload(config, (pointer,length) => this.bridge.query('new_vehicle',instructions,memory,key,pointer,length));
       const vm = new VehicleVm(this.bridge,handle,options.onLog,() => { if (key) this.hosts?.remove(key); });
-      if (key) this.bridge.call('set_map_host',handle,key);
-      if (options.properties !== undefined) vm.setProperties(options.properties);
-      if (options.devLogs || options.onLog) vm.enableLogs();
+      if (options.mapProvider !== undefined) this.bridge.call('set_map_host',handle,key);
+
+      if (options.devLogs) vm.enableLogs();
       return vm;
     } catch (error) { try { this.cleanup(handle,key); } catch (cleanupError) { throw new AggregateError([error,cleanupError],'VM creation and cleanup both failed'); } throw error; }
   }
   /** アドオンモードは、型レベルおよび生ハンドルの境界の両方で明確に分離されています。 */
   createAddon(options: AddonOptions = {}): AddonVm {
     const [instructions,memory] = budgets(options);
+    const environment = environmentWire(options.environment, options.bindings);
     if (!(this.bridge.capabilities & 8)) throw new EngineError(6,'Addon profile is absent');
     const server = {...options.server}; const names = Object.keys(server);
     if (names.length > 512 || Object.values(server).some(value => typeof value !== 'function')) throw new TypeError('Invalid server function configuration');
     let key = 0, handle = 0;
     try {
-      if (names.length) {
+      if (names.length || Object.keys(options.bindings?.functions ?? {}).length) {
         if (!this.hosts || !(this.bridge.capabilities & 16)) throw new EngineError(6,'This runtime cannot call JS host services');
-        key = this.hosts.register({server});
+        key = this.hosts.register({server, ...(options.bindings?.functions === undefined ? {} : {functions: options.bindings.functions})});
       }
-      const config = encoder.encode(JSON.stringify({newWorld:options.newWorld ?? true,properties:JSON.parse(decoder.decode(encodeProperties(options.properties ?? {}))) as unknown,savedata:options.savedata === undefined ? null : encodeLuaValue(options.savedata),server:names}));
+      const config = encoder.encode(JSON.stringify({...environment,newWorld:options.newWorld ?? true,properties:JSON.parse(decoder.decode(encodeProperties(options.properties ?? {}))) as unknown,savedata:options.savedata === undefined ? null : encodeLuaValue(options.savedata),server:names}));
       handle = this.bridge.upload(config,(pointer,length) => this.bridge.query('new_addon',instructions,memory,key,pointer,length));
       const vm = new AddonVm(this.bridge,handle,options.onLog,() => { if (key) this.hosts?.remove(key); });
-      if (options.devLogs || options.onLog) vm.enableLogs();
+      if (options.devLogs) vm.enableLogs();
       return vm;
     } catch (error) { try { this.cleanup(handle,key); } catch (cleanupError) { throw new AggregateError([error,cleanupError],'Addon creation and cleanup both failed'); } throw error; }
   }

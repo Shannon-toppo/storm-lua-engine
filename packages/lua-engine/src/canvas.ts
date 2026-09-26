@@ -1,10 +1,11 @@
 /** raw RGBAをImageDataで表示する、任意の描画アダプタ。 */
-import type { FrameLease } from './frame.js';
+/** borrowed FrameLeaseまたはWorkerから転送した所有画素。 */
+export interface FramePixels { readonly width:number; readonly height:number; readonly pixels:Uint8Array }
 export class CanvasPresenter {
   #image: ImageData | undefined;
   constructor(readonly context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {}
   /** 再利用可能な ImageData にコピーします。アルファ、ガンマ、またはエンジンの生バッファを変更しません。 */
-  present(frame: FrameLease): void {
+  present(frame: FramePixels): void {
     if (!this.#image || this.#image.width !== frame.width || this.#image.height !== frame.height) {
       this.context.canvas.width = frame.width;
       this.context.canvas.height = frame.height;

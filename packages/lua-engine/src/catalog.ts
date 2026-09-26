@@ -249,7 +249,7 @@ export const VEHICLE_API_CATALOG = [
     "returns": ""
   },
   {
-    "availability": "host-extension",
+    "availability": "implemented",
     "effect": "log",
     "parameters": "...: any",
     "path": "debug.log",

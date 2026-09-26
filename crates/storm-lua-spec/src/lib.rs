@@ -19,3 +19,6 @@ pub mod addon;
 
 /// ホストマップ描画およびパレット契約。
 pub mod map;
+
+/// Script-visible game and explicitly extended environments.
+pub mod environment;

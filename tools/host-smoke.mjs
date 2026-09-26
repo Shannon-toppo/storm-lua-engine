@@ -3,6 +3,7 @@ export function hostSmoke(engine, api) {
   const check = (condition,message) => { if (!condition) throw new Error(message); };
   const logs=[], calls=[];
   const addon=engine.createAddon({
+    environment:'extended',
     properties:{Rate:2.5}, onLog:record=>logs.push(record),
     server:{
       getPlayers:()=>[{kind:'table',entries:[[1n,api.luaTable({id:7n,name:'tester'})]]}],
@@ -48,7 +49,7 @@ function httpReply(port,path,reply) assert(port==8080 and path=='/status');g_sav
     return bytes;
   }});
   try {
-    vehicle.load('assert(server==nil and matrix==nil) function onDraw() screen.setColor(255,0,0);screen.setMapColorOcean(0,0,64);screen.drawMap(4,5,6);screen.drawRectF(0,0,1,1) end','=map-smoke');
+    vehicle.load('local function assert(v)if not v then local fail=nil;fail()end end;assert(server==nil and matrix==nil) function onDraw() screen.setColor(255,0,0);screen.setMapColorOcean(0,0,64);screen.drawMap(4,5,6);screen.drawRectF(0,0,1,1) end','=map-smoke');
     vehicle.draw(2,2);const pixels=vehicle.frame().copy();
     check(maps.length===1 && maps[0].center[0]===4 && maps[0].colors.ocean[2]===64 && maps[0].colors.land===undefined,'map request contract');
     check(pixels[0]===255 && pixels[4]===0 && pixels[6]===64,'map order and draw color');

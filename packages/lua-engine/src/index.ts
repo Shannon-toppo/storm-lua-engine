@@ -14,3 +14,8 @@ export type { DebugHandle, DebugValue, StackFrame, Variable, TableEntry, Breakpo
 export { VEHICLE_API_CATALOG, ADDON_API_CATALOG, ADDON_EVENTS } from './catalog.js';
 export { luaTable, luaText, luaField, encodeSavedata, decodeSavedata } from './values.js';
 export type { LuaValue, LuaTable } from './values.js';
+
+export type { EnvironmentProfile, HostBindings } from './environment.js';
+export { bindingPaths } from './environment.js';
+
+export { ENVIRONMENT_CATALOG } from './environment-catalog.js';

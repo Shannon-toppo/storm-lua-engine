@@ -26,7 +26,7 @@ recordには`source: 'print' | 'debug.log'`と`bytes: Uint8Array`があります
 
 例えば`onLog: record => { console.log(record.source, new TextDecoder().decode(record.bytes)); }`とすればブラウザのコンソールへ接続できます。これは表示用の例です。厳密なUTF-8検査には`new TextDecoder('utf-8', { fatal: true })`を使用し、生データを保存するならbytesをそのまま扱います。
 
-ビークルではログ拡張は既定で無効です。`onLog`、`devLogs: true`、`enableLogs()`のいずれかで有効にします。Addonには制限された`debug.log`が最初からあり、`print`は同じ方法で明示的に有効化します。raw Lua debugライブラリを公開する意味ではありません。
+Vehicle/Addonとも`debug.log`はgame環境から利用できます。`onLog`は配送先の設定だけで、公開関数を増やしません。`print`は`environment: "extended"`で明示的に使用します。`devLogs`／`enableLogs()`もextended専用です。Lua標準debugライブラリを公開する意味ではありません。[環境ガイド](environments.md)を参照してください。
 
 自動配送が不要なら`drainLogRecords()`で構造化ログ、`drainLogs()`でbytesだけを取得できます。`flushLogs(handler)`は蓄積済みログを明示配送します。Rustでは`drain_log_records()`をアプリのloggerやIDEへ渡してください。
 

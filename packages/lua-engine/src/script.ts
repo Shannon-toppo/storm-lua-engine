@@ -6,10 +6,12 @@ export type LogHandler = (record: LogRecord) => void;
 export interface HttpToken { readonly generation: bigint; readonly id: number }
 export interface HttpRequest { readonly token: HttpToken; readonly port: number; readonly request: Uint8Array }
 export interface ScriptOptions {
+  readonly environment?: import('./environment.js').EnvironmentProfile;
+  readonly bindings?: import('./environment.js').HostBindings;
   readonly instructionBudget?: number;
   readonly memoryBytes?: number;
   readonly devLogs?: boolean;
-  /** 中断/失敗を含むLua復帰後に呼び出されます。これによりprintも有効化されます。 */
+  /** 中断/失敗を含むLua復帰後のログ配送先。設定してもprintは有効化しません。 */
   readonly onLog?: LogHandler;
 }
 import { requireSynchronous } from './host.js';

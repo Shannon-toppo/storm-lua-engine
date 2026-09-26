@@ -50,5 +50,5 @@ pub const FUNCTIONS: &[ApiFunction] = &[
     ApiFunction { path: "screen.drawTextBox", parameters: "x: number, y: number, width: number, height: number, text: string, horizontalAlign: number, verticalAlign: number", returns: "", phase: "draw", availability: "implemented", effect: "draw-command" },
     ApiFunction { path: "screen.drawMap", parameters: "x: number, y: number, zoom: number", returns: "", phase: "draw", availability: "requires-provider", effect: "host-service" },
     ApiFunction { path: "print", parameters: "...: any", returns: "", phase: "any", availability: "host-extension", effect: "log" },
-    ApiFunction { path: "debug.log", parameters: "...: any", returns: "", phase: "any", availability: "host-extension", effect: "log" },
+    ApiFunction { path: "debug.log", parameters: "...: any", returns: "", phase: "any", availability: "implemented", effect: "log" },
 ];

@@ -22,7 +22,7 @@ test('compiler-only single-source entry produces deterministic Lua without execu
   assert.equal(a.size, a.code.length);
   assert.equal(a.code, source);
   assert.equal(compiler.minify(source, { numericMode: 'tolerant', zeroCostNewlines: false }).code, 'function onTick()output.setNumber(1,3)end');
-  assert.equal(compiler.minify('error("must not execute")').ok, true);
+  assert.equal(compiler.minify('error("must not execute")', {environment: 'extended'}).ok, true);
 });
 
 test('multi-module build retains a readable source map or returns minification statistics', () => {

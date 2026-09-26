@@ -107,6 +107,10 @@ pub enum SearchMode {
 /// 最小限のフィールドのみ反映し、残りは移植対象パス進行に応じて追加する。
 #[derive(Debug, Clone)]
 pub struct CompileOptions {
+    /// Script-visible profile shared with the runtime.
+    pub environment: storm_lua_spec::environment::EnvironmentProfile,
+    /// Dot-separated host-provided binding paths; replacing builtins requires conservative compilation.
+    pub host_bindings: Vec<String>,
     /// Optimization pipeline selection.
     pub mode: CompileMode,
     /// Optional explicit property specialization settings.
@@ -130,6 +134,8 @@ pub struct CompileOptions {
 impl Default for CompileOptions {
     fn default() -> Self {
         CompileOptions {
+            environment: Default::default(),
+            host_bindings: Vec::new(),
             mode: CompileMode::Smallest,
             property: None,
             zero_cost_newlines: true,
@@ -159,6 +165,20 @@ pub struct PassRecord {
 impl CompileOptions {
     /// Validate low-level callers; removed IDs are not silently ignored.
     pub(crate) fn validate_pass_toggles(&self) -> Result<(), String> {
+        if !self.host_bindings.is_empty()
+            && self.environment != storm_lua_spec::environment::EnvironmentProfile::Extended
+        {
+            return Err(
+                "invalid-environment: host bindings require the extended environment".into(),
+            );
+        }
+        if self
+            .host_bindings
+            .iter()
+            .any(|p| !storm_lua_spec::environment::valid_binding_path(p))
+        {
+            return Err("invalid-environment: invalid host binding path".into());
+        }
         for id in self.pass_toggles.keys() {
             if !crate::pass_ids::is_valid_pass_id(id) {
                 return Err(format!("unknown optimization pass: {id}"));

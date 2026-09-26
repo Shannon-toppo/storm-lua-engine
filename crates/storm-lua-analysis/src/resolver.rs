@@ -108,10 +108,7 @@ impl Resolution {
 }
 
 /// Stormworks ランタイムがスクリプト側の write なしに提供するグローバル名。
-pub const API_ROOTS: &[&str] = &[
-    "math", "input", "output", "property", "screen", "string", "table", "type", "ipairs", "pairs",
-    "next", "select", "tonumber", "tostring", "map", "self",
-];
+pub use storm_lua_spec::environment::VEHICLE_ROOTS as API_ROOTS;
 
 pub fn api_roots(name: &str) -> bool {
     API_ROOTS.contains(&name)
@@ -143,9 +140,7 @@ pub fn reserved(name: &str) -> bool {
             | "true"
             | "until"
             | "while"
-            | "onTick"
-            | "onDraw"
-    )
+    ) || storm_lua_spec::environment::VEHICLE_CALLBACKS.contains(&name)
 }
 
 /// TS の forEachChild と同じ順で子ノードを訪問する（キー挿入順。annotate skip は無視）。

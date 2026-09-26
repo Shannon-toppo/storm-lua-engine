@@ -45,3 +45,6 @@ impl Default for ExecutionLimits {
 pub mod logging;
 /// 損失のないホスト／イベント／セーブデータ値。
 pub mod value;
+
+/// Trusted host value/function bindings, separate from script-visible standard libraries.
+pub mod bindings;
