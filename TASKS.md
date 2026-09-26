@@ -31,6 +31,10 @@
 | P2 public structure | 仕様・採用済みfixtureの自己完結化、不要な元ソース/採取資料/抽出ツールの除去 | 731ケースの入力/期待値と同梱グリフを保持、外部cloneなしで直接/Lua両経路を検証 |
 | P2 release privacy | 配布WASMのビルドパス正規化と成果物検査 | 両targetの正規化、梱包後と静的サイトの再検査。結果はverificationに記録 |
 
+## Compiler SDK統合計画（未実装）
+
+[統合設計](docs/design/compiler-sdk.md)の段階A〜Fと完了条件を参照する。移行元の公開対象・既定無効パス・依存境界を棚卸しし、言語処理をEngine固有の新規所有者へ移す。欠陥由来の無効パスは削除または完全修正で解消する。CLI/Web同居とmakkii.jp公開は提案段階であり、実装・配備完了として数えない。
+
 ## Remaining work, not counted as completed
 
 | Priority | Task | Exit gate |

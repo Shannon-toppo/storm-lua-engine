@@ -1,5 +1,7 @@
 # Integration patterns and migration
 
+今後の言語処理統合と公式フロントエンド案は[Compiler SDK統合設計](compiler-sdk.md)を参照する。以下はv0.1.0の現行consumer接続方針であり、統合済みAPIを示すものではない。
+
 公開ガイドは特定の私有アプリや内部パスを前提にせず、用途で分類する。実行できる[組み込み例](../../examples/README.md)と、下記のconsumer移行方針を区別する。[API状況](../specs/api.md)を参照。
 
 | Consumer | Runtime dependency | Typical use |

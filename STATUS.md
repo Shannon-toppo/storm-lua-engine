@@ -2,6 +2,12 @@
 
 2026-09-26 — **Storm Lua Engine 0.1.0**。ビークル／AddonのLua実行、CPU描画、デバッガとホストサービスを提供します。変更内容は[CHANGELOG](CHANGELOG.md)、配布方法は[導入ガイド](docs/guide/getting-started.md)を参照してください。
 
+## 次期設計（未実装）
+
+[Compiler SDK統合設計](docs/design/compiler-sdk.md)と[ADR 0005](docs/adr/0005-compiler-sdk-integration.md)を記録した。言語処理を責務別の新規クレートへ移し、runtimeとは独立利用する方針。公式CLI/Webとmakkii.jp静的公開は追加提案。既定無効パスは削除または根本修正が必須。現時点では新API・クレート・パス修正・フロントエンド実装・配備を行っていない。
+
+## v0.1.0の実装済み範囲
+
 | 対象 | 状態 |
 |---|---|
 | 仕様の正本 | 本リポジトリの仕様・採用済みケース・実装。下流アプリへ逆依存しない |

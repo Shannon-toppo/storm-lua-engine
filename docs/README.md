@@ -11,6 +11,8 @@
 | Document | Owns |
 |---|---|
 | [Architecture](design/architecture.md) | crate責務・依存方向・ホストとの境界 |
+| [Compiler SDK plan](design/compiler-sdk.md) | 未実装の言語処理統合設計・ホストAPI・公式CLI/Web提案・移行ゲート |
+| [Compiler integration decision](adr/0005-compiler-sdk-integration.md) | 言語処理移管の判断理由と保留事項 |
 | [API surface](specs/api.md) | 現在の公開API、今後の高/低レイヤーAPI |
 | [Numeric I/O](specs/numeric-io.md) | f32/f64の境界・チャネル・出力保持 |
 | [Addon](specs/addon.md) | 独立profile・lifecycle・savedata・host server契約 |
