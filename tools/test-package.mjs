@@ -45,5 +45,11 @@ console.log('Isolated installed package: Lua execution, raster, export paths and
   console.log(run(process.execPath,['consumer.mjs'],temporary).trim());
   await writeFile(join(temporary,'source-loading.mjs'),await readFile(join(root,'examples/consumer/source-loading.mjs')));
   console.log(run(process.execPath,['source-loading.mjs'],temporary).trim());
-  console.log(`${provided?'Provided release tarball':`Packed ${packed.files.length} files`}; offline install used no repository source or runtime npm dependencies.`);
+  // Source-map decoding belongs to this consumer, not the runtime-only SDK package.
+  const development = JSON.parse(await readFile(join(root,'packages/lua-engine/package.json'),'utf8'));
+  const traceVersion = development.devDependencies['@jridgewell/trace-mapping'];
+  run(npm,['install','--offline','--ignore-scripts','--no-audit','--no-fund',`@jridgewell/trace-mapping@${traceVersion}`],temporary);
+  await writeFile(join(temporary,'source-map.mjs'),await readFile(join(root,'examples/consumer/source-map.mjs')));
+  console.log(run(process.execPath,['source-map.mjs'],temporary).trim());
+  console.log(`${provided?'Provided release tarball':`Packed ${packed.files.length} files`}; SDK has no runtime npm dependencies; mapped-debug consumer separately installs trace-mapping.`);
 }finally{await rm(temporary,{recursive:true,force:true});}

@@ -33,11 +33,8 @@ fn ambient_source<'a>(project: &'a LuaProject, key: &str) -> Option<&'a str> {
 }
 
 /// `LinkedRange::module` に現れるキー（通常モジュール or ambient 合成キー）の元ソース全文を取得する。
-/// `link.rs::inject_ambient` は ambient ルート宣言行（`sim = {}` 等）に `module: root` の
-/// `LinkedRange` を積むが、これは実ソースを持たない合成テキストである
-/// （root 名は §2.1 により予約済みでモジュールキーにも ambient メンバーキーにもなり得ない）。
-/// そのような行は Source Map 上マッピングを出さない（`None`）— 合成行のマッピング省略は
-/// `link.rs` 冒頭コメントが明記する既存の best-effort 方針と同じ扱い。
+/// Generated declarations are not assigned an origin. Ambient member bodies
+/// resolve here exactly like ordinary module bodies.
 fn source_text<'a>(project: &'a LuaProject, key: &str) -> Option<&'a str> {
     project
         .modules
@@ -50,8 +47,7 @@ fn source_text<'a>(project: &'a LuaProject, key: &str) -> Option<&'a str> {
 ///
 /// - 行単位マッピング: `linked_source` の各出力行を `lookup_source_line` で逆引きし、
 ///   (出力行, col=0) → (元モジュールの `sources` インデックス, 元行, col=0) を記録する。
-/// - 区間表に対応の無い行（do/end 等、`LinkedRange` を持たない合成行があり得る。`link.rs` 冒頭コメント参照）
-///   はマッピングを出さない（スキップ）。
+/// - 原文の由来を持たない合成行はsourceなしのsegmentを出し、直前の位置を継承させない。
 /// - `names` は v1 では出さない（設計 §6.1）。
 /// - `link.linked_source` が `None`（リンク失敗）なら `None` を返す。
 #[expect(
@@ -66,11 +62,13 @@ pub fn generate_source_map(project: &LuaProject, link: &LinkResult) -> Option<St
 
     let total_lines = linked_source.lines().count() as u32;
     for output_line in 1..=total_lines {
-        let Some((module, source_line)) = lookup_source_line(&link.ranges, output_line) else {
-            continue;
-        };
-        let Some(text) = source_text(project, module) else {
-            // ambient ルート宣言行等、実ソースを持たない合成行はマッピングを出さない。
+        let origin = lookup_source_line(&link.ranges, output_line).and_then(|(module, line)| {
+            source_text(project, module).map(|text| (module, line, text))
+        });
+        let Some((module, source_line, text)) = origin else {
+            // A generated-only segment prevents greatest-lower-bound consumers
+            // from attributing glue (or a blank line) to the previous source.
+            builder.add_raw(output_line - 1, 0, 0, 0, None, None, false);
             continue;
         };
         let src_id = *source_ids.entry(module).or_insert_with(|| {
@@ -238,13 +236,90 @@ mod tests {
                     assert_eq!(token.get_src_line() + 1, source_line);
                 }
                 None => {
-                    // マッピングの無い行は lookup_token が別行の直前トークンを返し得るため、
-                    // 「その行ちょうどに一致するトークンが無い」ことのみ確認する。
-                    if let Some(token) = token {
-                        assert_ne!(token.get_dst_line(), output_line);
-                    }
+                    let token = token.expect("generated lines have an explicit unmapped segment");
+                    assert_eq!(token.get_dst_line(), output_line);
+                    assert_eq!(token.get_source(), None);
                 }
             }
         }
+    }
+    #[test]
+    fn generated_glue_never_points_past_source_and_does_not_inherit_an_origin() {
+        for module in [
+            "value=7",
+            "return {value=7}",
+            "if flag then return 7 end\nreturn 8",
+            "",
+        ] {
+            let p = project(
+                "main",
+                &[
+                    (
+                        "main",
+                        "local m=require(\"lib\")\nfunction onTick()output.setNumber(1,7)end",
+                    ),
+                    ("lib", module),
+                ],
+            );
+            let link = link_project(&p);
+            let generated = link.linked_source.as_ref().unwrap();
+            let map = sourcemap::SourceMap::from_slice(
+                generate_source_map(&p, &link).unwrap().as_bytes(),
+            )
+            .unwrap();
+            for token in map.tokens() {
+                if let Some(file) = token.get_source() {
+                    let source = if file == "lib.lua" {
+                        module
+                    } else {
+                        &p.modules["main"]
+                    };
+                    assert!(
+                        token.get_src_line() < source.split('\n').count() as u32,
+                        "{module:?}: {file} maps beyond its source"
+                    );
+                }
+            }
+            for (line, text) in generated.lines().enumerate() {
+                if text == "do"
+                    || text.starts_with("if __stormmin_link_")
+                    || text.starts_with("local __stormmin_link_")
+                {
+                    let token = map.lookup_token(line as u32, 0).unwrap();
+                    assert_eq!(
+                        token.get_source(),
+                        None,
+                        "generated-only line was assigned a source: {text}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn multiline_return_body_has_exact_original_line_not_generated_prefix_line() {
+        let source = "return function(x)\n  return x+1\nend";
+        let p = project(
+            "main",
+            &[
+                (
+                    "main",
+                    "local f=require(\"lib\")\nfunction onTick()output.setNumber(1,f(6))end",
+                ),
+                ("lib", source),
+            ],
+        );
+        let link = link_project(&p);
+        let code = link.linked_source.as_ref().unwrap();
+        let map =
+            sourcemap::SourceMap::from_slice(generate_source_map(&p, &link).unwrap().as_bytes())
+                .unwrap();
+        let generated = code
+            .lines()
+            .position(|line| line == "  return x+1")
+            .unwrap();
+        let token = map.lookup_token(generated as u32, 0).unwrap();
+        assert_eq!(token.get_source(), Some("lib.lua"));
+        assert_eq!(token.get_src_line(), 1);
     }
 }

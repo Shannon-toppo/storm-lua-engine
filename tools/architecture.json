@@ -73,7 +73,8 @@
       "storm-lua-minify"
     ],
     "external": [
-      "serde_json"
+      "serde_json",
+      "sourcemap"
     ]
   },
   "xtask": {

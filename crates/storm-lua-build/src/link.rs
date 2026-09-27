@@ -12,9 +12,8 @@
 //!
 //! **既知の制約**: 区間表は行単位（設計 §6.1 と同じ粒度）。1行に複数トップレベル文が
 //! 同居する非典型ソース（`local a=1 local b=2` のように改行を省略した記述）は、
-//! 区間の行対応が近似になる場合がある。do/end 等の合成行（元ソースに対応しない行）は
-//! 最も近い意味のある元行（require 呼び出し文の行、モジュール先頭行など）に割り当てる
-//! best-effort であり、区間表を持たない（先頭の巻き上げ宣言行のように）場合もある。
+//! 区間の行対応が近似になる場合がある。区間表は原文から転写した範囲のみを持つ。
+//! do/endや巻き上げ宣言などの合成行には架空の元行を割り当てない。
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 pub use storm_lua_analysis::structure::{analyze_structure, StructuralAnalysis};
@@ -269,7 +268,7 @@ impl<'a> Expander<'a> {
         let mut roots_seen = HashSet::new();
         for (root, _) in order {
             if roots_seen.insert(root.clone()) {
-                self.append_boilerplate(root, 1, &format!("{root} = {{}}\n"));
+                self.append_generated(&format!("{root} = {{}}\n"));
             }
         }
         for (root, member) in order {
@@ -286,27 +285,10 @@ impl<'a> Expander<'a> {
         self.append_transformed_region(&entry, end);
     }
 
-    /// `text` を出力へそのまま追記する（合成テキスト。元ソースへの対応は `line_hint` を使う）。
-    fn append_boilerplate(&mut self, key: &str, line_hint: u32, text: &str) {
-        if text.is_empty() {
-            return;
-        }
-        let out_start = line_of(&self.output);
+    /// Append generated glue without inventing a source location. A later verbatim
+    /// slice on the same output line may still provide its real source mapping.
+    fn append_generated(&mut self, text: &str) {
         self.output.push_str(text);
-        let newline_count = text.matches('\n').count() as u32;
-        let out_end = if text.ends_with('\n') {
-            out_start + newline_count - 1
-        } else {
-            out_start + newline_count
-        };
-        if out_start <= out_end {
-            self.ranges.push(LinkedRange {
-                output_start_line: out_start,
-                output_end_line: out_end,
-                module: key.to_string(),
-                source_start_line: line_hint,
-            });
-        }
     }
 
     /// モジュール `key` の元ソース `source[start..end]` を一切改変せずそのまま追記する。
@@ -345,23 +327,19 @@ impl<'a> Expander<'a> {
                 "require 文の位置がモジュール展開領域を超えている(内部不変条件違反)"
             );
             self.append_source_slice(key, &source, cursor, stmt_start);
-            self.append_require_replacement(key, site);
+            self.append_require_replacement(site);
             cursor = stmt_end;
         }
         self.append_source_slice(key, &source, cursor, region_end);
     }
 
-    fn append_require_replacement(&mut self, key: &str, site: &RequireSite) {
+    fn append_require_replacement(&mut self, site: &RequireSite) {
         if !self.expanded.contains(&site.key) {
             self.expand_dependency(&site.key);
         }
         if let Some(name) = &site.binding {
             let var = self.var_names[&site.key].clone();
-            self.append_boilerplate(
-                key,
-                site.stmt_range.line,
-                &format!("local {name} = {var}\n"),
-            );
+            self.append_generated(&format!("local {name} = {var}\n"));
         }
     }
 
@@ -377,13 +355,12 @@ impl<'a> Expander<'a> {
         let source = self.source_of(key).to_string();
         let analysis = &self.modules[key];
         let shape = classify_shape(&analysis.ast, analysis.root);
-        let last_line = line_of(&source);
 
         match shape {
             Shape::NoReturn => {
-                self.append_boilerplate(key, 1, "do\n");
+                self.append_generated("do\n");
                 self.append_transformed_region(key, source.len());
-                self.append_boilerplate(key, last_line, &format!("\n{var} = true\nend\n"));
+                self.append_generated(&format!("\n{var} = true\nend\n"));
             }
             Shape::TailReturn(return_stmt_id) => {
                 #[expect(
@@ -400,10 +377,10 @@ impl<'a> Expander<'a> {
                 };
                 let has_exprs = !exprs.is_empty();
 
-                self.append_boilerplate(key, 1, "do\n");
+                self.append_generated("do\n");
                 self.append_transformed_region(key, return_start);
                 if has_exprs {
-                    self.append_boilerplate(key, r_line, &format!("\n{var} ="));
+                    self.append_generated(&format!("\n{var} ="));
                     // `return` キーワード直後(6バイト)から先頭部の残り(値・末尾コメント等)をそのまま流用。
                     // require の戻り値は最初の値のみが使われる標準 Lua 意味論と同じく、
                     // 単一 var への複数値代入は先頭値のみが束縛される(Lua の代入意味論)。
@@ -413,30 +390,26 @@ impl<'a> Expander<'a> {
                         return_start + "return".len(),
                         source.len(),
                     );
-                    self.append_boilerplate(
-                        key,
-                        r_line,
-                        &format!("\nif {var} == nil then {var} = true end\nend\n"),
-                    );
+                    self.append_generated(&format!(
+                        "\nif {var} == nil then {var} = true end\nend\n"
+                    ));
                 } else {
-                    self.append_boilerplate(key, r_line, &format!("\n{var} = true"));
+                    self.append_generated(&format!("\n{var} = true"));
                     self.append_source_slice(
                         key,
                         &source,
                         return_start + "return".len(),
                         source.len(),
                     );
-                    self.append_boilerplate(key, r_line, "\nend\n");
+                    self.append_generated("\nend\n");
                 }
             }
             Shape::Iife => {
-                self.append_boilerplate(key, 1, &format!("{var} = (function()\n"));
+                self.append_generated(&format!("{var} = (function()\n"));
                 self.append_transformed_region(key, source.len());
-                self.append_boilerplate(
-                    key,
-                    last_line,
-                    &format!("\nend)()\nif {var} == nil then {var} = true end\n"),
-                );
+                self.append_generated(&format!(
+                    "\nend)()\nif {var} == nil then {var} = true end\n"
+                ));
             }
         }
     }

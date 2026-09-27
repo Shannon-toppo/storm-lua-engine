@@ -185,7 +185,8 @@ impl Microcontroller {
     pub fn properties(&self) -> Ref<'_, PropertyBag> {
         Ref::map(self.state.borrow(), |state| &state.properties)
     }
-    /// デバッガの計測コードとは独立したホスト拡張として print/debug.log を有効化します。
+    /// extended専用のログ機能を明示要求します。debug.logはgameでも利用可能です。
+    /// ホストのデバッガ設定や、明示的に置換されたprintを変更しません。
     pub fn enable_dev_logs(&mut self) -> Result<(), VmError> {
         self.vm.ensure_idle()?;
         self.vm.enable_logs()?;

@@ -18,6 +18,7 @@ storm-screen-raster = { workspace = true }
 storm-lua-vm = { workspace = true, features = ["backend-mlua", "debug"] }
 storm-lua-microcontroller = { workspace = true, features = ["debug"] }
 serde_json = { workspace = true }
+sourcemap = "9.3"
 
 [[example]]
 name = "native-foundation"

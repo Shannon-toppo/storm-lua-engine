@@ -665,6 +665,7 @@ name = "storm-lua-conformance"
 version = "0.2.0"
 dependencies = [
  "serde_json",
+ "sourcemap",
  "storm-lua-addon",
  "storm-lua-analysis",
  "storm-lua-build",
