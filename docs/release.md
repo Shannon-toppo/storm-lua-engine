@@ -2,13 +2,21 @@
 
 リリースは管理者の明示指示で行います。CIは検証のみで、通常のpushからregistryへ自動公開しません。RustクレートはGitタグ、JavaScript／TypeScript SDKはnpm、ビルド済み配布物はGitHub Releasesで提供します。
 
+## v0.2.0の完成範囲
+
+v0.2.0は既存runtime/raster/debug、Vehicle Compiler SDK、game/extendedとbindings、開発require、Vehicle load履歴、Playgroundを一つの版として仕上げます。ゲーム向けのmulti-fileは`build({minify:false,environment:"game"})`で単一ソースにして実行し、LB式の実行時includeはextendedの`requireLoader`を維持します。両者の意味を自動推測しません。
+
+Source Mapは**非短縮リンク結果の行単位対応だけ**を今回の正式範囲とします。元ファイルのbreakpoint・停止行・runtime errorへの接続を実行例と回帰で確認します。最適化後マップはv0.2.5またはv0.3.0の別改修であり、現在のminify結果へ古いmapを付けません。元変数の復元や新しいデバッガ抽象は今回の条件に含めません。
+
+ローカル完成確認は[TASKS](../TASKS.md)の5項目と[候補記録](verification/release-candidate-0.2.0.md)。この段階でpush・CI実行・タグ・公開・本番配備は行いません。公開時のCIと正式配布物確定は、以下の別工程です。
+
 ## 版と契約の確認
 
 現在の準備版は**0.2.0**です。未pushのCompiler SDK・環境修正・Playground・開発用source loaderとload履歴を、この版へ集約します。公開実行前に[0.2.0確認記録](verification/source-loading-20260927.md)とCHANGELOGを確認します。
 
 Cargo workspaceと`packages/lua-engine/package.json`の版を揃え、`CHANGELOG.md`へ利用者に影響する変更を書きます。タグは`v<version>`とします。公開済みのタグやnpmの同じ版を差し替えず、修正は新しい版として出します。
 
-公開API、WASM ABI、描画命令、savedata/checkpoint、Playgroundのproject形式に非互換変更があるか確認します。形式を変える場合は版とreject条件、往復テストを同時に更新し、予定している非互換変更を分散したリリースへ持ち越しません。初版0.1.0では採用済みの画面731ケース、数値規則、保存形式を変更していません。
+公開API、WASM ABI、描画命令、savedata/checkpoint、Playgroundのproject形式に非互換変更があるか確認します。形式を変える場合は版とreject条件、往復テストを同時に更新し、予定している非互換変更を分散したリリースへ持ち越しません。0.2.0でも既存savedata/project形式、描画命令ABI、Composite I/Oレイアウトの維持を照合します。環境の既定値やload/resetの挙動変更はCHANGELOGで明示します。
 
 ## 検証とビルド
 

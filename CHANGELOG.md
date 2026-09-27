@@ -28,6 +28,8 @@
 - 不正な元ソースを公開finalizerへ渡した場合のpanicを診断へ変更。
 - 非公開fixtureの生成を通常コンパイラビルドから分離。
 
+- 非短縮リンクの合成行を架空の元行へ割り当てない。元ファイルのbreakpoint・step・エラー位置を往復するconsumer例とNative/WASM回帰を追加。
+
 ### ドキュメントと配布
 
 - 利用者向けガイド本文を[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)へ移設。リポジトリには契約・設計・検証・公開手順と実行可能な例を維持。

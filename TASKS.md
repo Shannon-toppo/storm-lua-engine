@@ -1,72 +1,44 @@
 # Implementation tasks
 
-v0.2.0準備: E3のsource loader、E4のVehicle load履歴再実行、利用者向けガイドの移設とブログ下書きを実施。未完了は明示的なrelease/push/deployと、Phys Simなど個別ホスト側の採用です。os.clock専用ガイドやmap実装は今回追加しません。詳細は[現在地](STATUS.md)。
+現在地は[STATUS](STATUS.md)。**v0.2.0の主要機能実装とローカル候補の完成確認1〜5は完了。残るのは別承認の公開工程です。** 利用ガイド本文はdocs.makkii.jp、実装契約・設計・検証は本リポで管理します。
 
+## v0.2.0のローカル完成確認（1〜5完了）
 
-現状と検証結果は[STATUS](STATUS.md)、[API](docs/specs/api.md)、[verification](docs/verification/release-0.1.0.md)。完了と未検証を分離する。
+| 項目 | 完了条件 |
+| --- | --- |
+| 範囲固定 | 最適化後Source Mapは0.2.5/0.3.0へ分離。gameでのmulti-fileは非短縮build経由、開発includeはextended＋requireLoaderを維持 |
+| 非短縮マップの利用例 | 元ファイル→生成行のbreakpoint、停止/step/caller/error→元位置を実SDKで往復。合成行の誤帰属・存在しない行へ移動しない |
+| 契約レビュー | 環境、外部名、字句短縮、require、load/reset、停止/失敗状態、公開型と依存境界を確認し、実際の問題だけ修正 |
+| 公開対象の点検 | 公開済み0.1.0以降のreachable履歴・現行tracked tree・梱包内容・権利表示を確認。非公開コーパスを製品へ含めない |
+| 候補の検証記録 | 対象commit/ソースdigest、コマンド、結果、生成物hash、既知の制限を[候補記録](docs/verification/release-candidate-0.2.0.md)へ集約 |
 
-## Completed implementation
+## ローカル完成後の公開工程（未実施）
 
-| Priority | Task | Evidence |
-|---|---|---|
-| P1 | scalar line/rect/triangle/circle/text/textbox/clear | 731件の採用済みRGBAを直接描画と実Lua経路で検証。元データ・外部実装へ依存しない |
-| P1 | DrawCommand/ScreenSink/command buffer | specに所有、microcontrollerはrasterに依存しない |
-| P1 | 制限付きVM・sandbox・top-level・明示error | Native/Emscriptenでpcall回避防止・heap・syntax/runtime検査 |
-| P1 | input/output/property/callback lifecycle | f32境界、出力保持、property初期化/atomic更新、複数draw副作用 |
-| P1 | create/load/tick/draw/reset/dispose WASM＋TS SDK | 世代handle・memory growth・borrow/copy・Busy/破棄検査 |
-| P2 | ホストdebugger | breakpoints/into/over/out、raw検査、table epoch、watch予算/副作用 |
-| P2 | API catalog / 開発支援profile | Rust正本→TS/JSON、Lua登録とのparity。print/debug.log opt-in |
-| P2 | font/Unicode/text layout | 採用済みfont同梱、degree/tofu、大文字fallback、UTF-16 textbox |
-| P2 | browser組み込み | Chromium/Firefox/WebKitで731ケース、Lua/debug、Canvas、2 Worker |
-| P2 | 独立Addon profileとモード分離 | 専用Rust crate、createVehicle/createAddon、型・raw handleのmode検査 |
-| P2 | Addon lifecycle／savedata／menu property | top-level→restore→onCreate、tick/event/destroy、version付きcheckpoint往復 |
-| P2 | Host server登録／matrix基盤 | 同期host callback、lossless multi-return、matrix11関数、未提供をstub化しない |
-| P2 | drawMapとmap paletteのhost接続 | Native provider、runtime WASMのJS provider、命令順と失敗検査 |
-| P2 | print/debug.logの出力ルート | onLog／flush／drain、source+bytes、Lua失敗時の配送、sink error明示 |
-| P3 | HTTP request/reply/cancel | vehicle async／addon server、世代token、再入・duplicate・size検証 |
-| P2 sample | Three.js / CodeMirrorのAddonホスト例 | v0.1.0時点の記録。現行はappのPlaygroundにSDK確認を移行し、旧アプリは撤去済み |
-| P2 platforms | Native Linux／Windows／macOS | GitHub Actionsで全featuresのテスト、lints、型検証を実行 |
-| P2 docs | OSS README・consumer guide・実行例 | Node例をpacked packageの独立offline install先で実行。Rust例も実行 |
-| P3 | owned Worker transferとCanvas adapter | libraryのscheduler強制なし、host-owned exampleで実行検証 |
-| P3 | Native/WASM性能baseline | 同じLua fixtures、9batch測定、JSON receipt |
-| Release prep | Rust依存license自動生成・描画構成要素のMIT表示 | Cargo依存、描画構成要素、固定toolchainと標準ライブラリの通知を配布物へ同梱 |
+| 順番 | 工程 |
+| --- | --- |
+| 1 | 管理者の指示で候補をpushし、公開対象commitのLinux/Windows/macOS・WASM・ブラウザCIを確認 |
+| 2 | 同一commitのSDK tarball、Playground静的ZIP、検証記録、SHA256SUMSを固定し、梱包済みconsumerを再実行 |
+| 3 | CHANGELOGの日付確定、公開ブランチ、v0.2.0タグ、GitHub Release、npm公開とregistry再導入の確認 |
+| 4 | 対応版Playgroundとdocs-siteを配備し、本番subpath・WASM・Worker・CSP・キャッシュ・保存を確認 |
+| 5 | v0.2.0記事を公開状態に合わせて公開。v0.1.0記事は独立した初回公開記事として扱う |
+| 6 | 必要な下流の固定参照と完了記録を更新。各アプリ全体の移行完了をEngine公開へ抱き合わせない |
 
-| P2 public structure | 仕様・採用済みfixtureの自己完結化、不要な元ソース/採取資料/抽出ツールの除去 | 731ケースの入力/期待値と同梱グリフを保持、外部cloneなしで直接/Lua両経路を検証 |
-| P2 release privacy | 配布WASMのビルドパス正規化と成果物検査 | 両targetの正規化、梱包後と静的サイトの再検査。結果はverificationに記録 |
+手順と実行条件は[release](docs/release.md)。Playground CLIはリポジトリから使う確認用CLIとして提供し、独立npx packageや各OSの単体binaryを今回の条件に加えません。
 
-## Remaining work, not counted as completed
+## 今回の公開を待たせない後続項目
 
-| Priority | Task | Exit gate |
-|---|---|---|
-| P1 evidence | Property Numberの実ゲーム保存精度、missing/type mismatch等の実機規則 | ゲーム観察の独立oracle。現行エンジン規則と区別 |
-| P2 integration | 各consumerのgame互換harnessを本engineへ置換 | consumer単位で差分検証。独立した汎用Lua oracleは必要に応じ維持 |
-| P2 platforms | 実VSCode WebView | 実WebViewでSDK/CSP/loader/エラー処理を確認 |
-| P3 platforms | i686/armv7など追加CPU・OS組み合わせのNative実行matrix | C toolchain、整数/浮動小数点、raster、limits/debugを実行 |
-| P2 integration | 最初の実Addon consumer向けhost adapterと必要server署名 | worldを持つconsumerへ接続し実script/event列で検証。共通engineに偽worldを入れない |
-| P2 evidence | Addonの実ゲームoracle追加、matrix.rotationToFaceXZ、極端値と保存のedge case | 文書由来契約とゲーム内実測を区別。根拠なく未実装を埋めない |
-| P3 services | standalone TS rasterへのJS map provider、必要なmap座標変換等 | 実consumer要件と入出力/精度検証。現状の制約はガイドへ明記 |
-| P3 performance | 必要な場合のSIMD/shared memory/並列pool/batch拡張 | 既存正確性維持＋改善の実測。不要な必須依存を増やさない |
+| 対象 | 扱い・確認条件 |
+| --- | --- |
+| 最適化後Source Map | **v0.2.5またはv0.3.0**。最適化ASTの由来追跡、位置の合成、変換・削除・複製への対応を別に設計・検証。非短縮マップを流用しない |
+| 元変数・元の実行順での高度なデバッグ | 位置マップとは別機能。消えた値の復元を自動保証しない |
+| Addonコンパイラ | 現在はVehicle専用。Addon指定は明示拒否を維持 |
+| requireとextendedの分離、値返却型の動的loader | 現行経路を維持。具体的な追加host要件が出た段階で再評価 |
+| 各consumerの採用 | Storm Min/Editor等の実装・検証はconsumer側が所有。Phys Sim/Storm Code全体の完成は別工程 |
+| Propertyの保存精度・型不一致等の実ゲーム観察 | SDK間の一致とは区別する独立oracle。確認したゲーム版・モードの範囲を明示 |
+| Addonの追加server/matrix規則 | 実hostとゲーム観察に基づき追加。未実装を成功stubで埋めない |
+| map座標変換、描画専用TS rasterのmap provider | 実利用要求がある段階で入力・精度を検証して追加 |
+| VSCode WebView、追加CPU/OS | 実WebView/CSP、i686/armv7等を実際に実行した証拠と分離 |
+| SIMD/shared-memory/並列pool等 | 必要性と同条件の改善測定がある場合だけ検討 |
+| 全収集コーパス回帰・包括的性能評価 | 今回実施した代表回帰を全件と表現しない。測定なしの速度向上を主張しない |
 
-consumer向けの[Native differential example](conformance/examples/differential.rs)は実行済みだが、consumer本体の移行済みとは扱わない。未完了サービスを代用品や固定値で成功にしない。実行0件/fixture不在をPASSに数えない。
-
-現段階で優先するのは、hostを持つ実consumerへの接続と、そこで必要なserver関数の具体的な契約検証。全API名を一括でstub登録する作業や、根拠のない並列化を完了条件にしない。
-
-
-## リリース管理
-
-版と配布物の管理は[リリース手順](docs/release.md)に従います。ignore領域の調査資料や作業履歴を配布物へ含めず、必要なcopyright/許諾文を維持します。上の未完了事項は追加の検証・対応範囲であり、実装済み機能の利用条件と区別します。
-
-## Compiler SDKとPlayground
-
-初回のsyntax/analysis/minify/build移管、compiler-only WASM/TS入口、既存Storm Min接続、4パス撤去と追加修正は実装・検証済み。[統合検証](docs/verification/compiler-integration-20260926.md)を参照する。
-
-| 作業 | 完了条件 | 状態 |
-| --- | --- | --- |
-| Storm Minとの併存・Playgroundの範囲とapp配置 | [Playground設計](docs/design/playground.md)・[ADR 0006](docs/adr/0006-playground-coexistence.md)に従う | 方針確定 |
-| `app/cli/`・`app/web/` | 全公開SDK機能と操作/実行例/テストの対応を確認。実行・解析・描画・debug・Addon・サービスを含め、未対応は明示 | Playground実装・検証済み |
-| Addon Labの整理・廃止 | SDK確認部分と必要テストをappへ移管し、仮物理/3Dワールドと旧アプリ、旧CI/配布参照を撤去 | 移行・撤去済み |
-| makkii.jp向け公開用Worker | 設定と必要な配信処理をapp内で管理。サブパス・WASM/Worker・通知・版を検査し、Storm Minのrouteを維持 | 設定・dry-run済み／本番未配備 |
-| SDK公開前の追加整理 | 環境プロファイル・診断・外部名の是正は実装済み。追加の実ゲーム裏付け、全収集コーパス回帰・性能測定、公開版の選定は別作業 | 残件 |
-| Addonコンパイラ・高度な最適化後debug等 | 独立の機能追加として設計・検証。Playground追加のために実装したことにしない | 将来対応 |
-
-Storm MinのCLI/WebをEngineへ移設・廃止する作業は行わない。PlaygroundへIDE、共同編集、クラウド同期、ゲーム世界のシミュレーションを追加しない。公開・配備は別の明示操作とする。
+Storm MinのCLI/WebをPlaygroundへ移設・廃止しません。PlaygroundへIDE、共同編集、クラウド同期、ゲーム世界・仮物理を追加しません。過去版の確認件数と初回移管時の結果は各verificationに保持します。

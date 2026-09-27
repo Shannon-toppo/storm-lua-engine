@@ -31,3 +31,7 @@ TSとWASMをbuildした後、リポジトリルートから`python3 -m http.serv
 ## 開発用の名前付きソース
 
 [source-loading.mjs](consumer/source-loading.mjs)はインストール済みSDKだけを利用し、require先のブレークポイントと前置き・本体・後置きのresetを確認します。`node tools/test-package.mjs`も同じ例を隔離consumerで実行します。利用手順は[ソースガイド](https://docs.makkii.jp/storm-lua-engine/source-loading)を正本とします。
+
+## 非短縮ビルドのソースマップ
+
+`consumer/source-map.mjs`は、インストールしたSDKと`@jridgewell/trace-mapping`を使い、game環境で元ファイルのbreakpoint・step・caller・runtime error位置を往復します。対応したSDKとtrace-mappingを利用先へ導入して実行してください。SDKはこのconsumerを通常のパッケージ検査でも実行します。[利用ガイド](https://docs.makkii.jp/storm-lua-engine/source-maps)。

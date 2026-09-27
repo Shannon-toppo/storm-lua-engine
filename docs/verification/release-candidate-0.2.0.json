@@ -1,0 +1,832 @@
+{
+  "schemaVersion": 1,
+  "status": "local-candidate-validated-not-published",
+  "version": "0.2.0",
+  "date": "2026-09-27",
+  "testedCodeRevision": "8707a80f97722fb7ea6f1f7b7b86a58b5b37cdef",
+  "sourceDigest": {
+    "algorithm": "sha256 of sorted path-NUL-contentSha256-LF records",
+    "scope": "tracked source/build/config files with rs,ts,js,mjs,lua,py,sh,toml,json,lock,yml,yaml suffixes excluding docs/",
+    "files": 286,
+    "sha256": "3dbca31b08de3ad0c3e704498d69ea152335b8f843b9f940c789e8cabc41e4a9"
+  },
+  "platform": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "rust": "1.97.1",
+    "node": "22.22.1",
+    "npm": "9.2.0",
+    "emscripten": "6.0.6",
+    "browserPlugin": "absent; maintained Playwright runners used"
+  },
+  "scope": {
+    "nonMinifiedSourceMaps": true,
+    "optimizedSourceMaps": false,
+    "optimizedSourceMapMilestone": "v0.2.5 or v0.3.0",
+    "newRequireModes": false,
+    "published": false,
+    "pushed": false,
+    "deployed": false
+  },
+  "counts": {
+    "cargo-tests": {
+      "passed": 472,
+      "failed": 0,
+      "ignored": 0
+    },
+    "min-tests": {
+      "passed": 492,
+      "failed": 0,
+      "ignored": 0
+    },
+    "npm-tests": {
+      "tests": 27,
+      "pass": 27,
+      "fail": 0,
+      "skipped": 0
+    },
+    "wasm-tests": {
+      "tests": 48,
+      "pass": 48,
+      "fail": 0,
+      "skipped": 0
+    },
+    "app-tests": {
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "skipped": 0
+    },
+    "min-typescript-semantics": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "gates": [
+    {
+      "name": "cargo-format",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.465,
+      "log": "cargo-format.01.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "architecture",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "xtask",
+        "check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.214,
+      "log": "architecture.01.log",
+      "logSha256": "64e2c75d507c8e8f44cf5b225dfa2fb390639dff84269822614848dbb859808c"
+    },
+    {
+      "name": "cargo-default",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--locked",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.167,
+      "log": "cargo-default.01.log",
+      "logSha256": "9feae2f3d0bcefd124b60a3c695b5adbc62d72021d419152f6815dd029d7e2e2"
+    },
+    {
+      "name": "cargo-tests",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--all-features",
+        "--locked",
+        "--offline",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 20.391,
+      "log": "cargo-tests.01.log",
+      "logSha256": "a427876e9349781b4d8ee879e9c02ef588052add62aa37521a68518803cfece0"
+    },
+    {
+      "name": "cargo-clippy",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.164,
+      "log": "cargo-clippy.01.log",
+      "logSha256": "9ddcb7a97f3589835ba8f354c41d25b0a805bd5f85ddbccaff009e6f6dc7236c"
+    },
+    {
+      "name": "rustdoc",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "doc",
+        "--workspace",
+        "--all-features",
+        "--no-deps",
+        "--locked",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.469,
+      "log": "rustdoc.01.log",
+      "logSha256": "a697de837ba49b0e26beced8e4adab02ccff6d5832db2c479b08469c21a1749c"
+    },
+    {
+      "name": "example-microcontroller",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "run",
+        "-p",
+        "storm-lua-conformance",
+        "--example",
+        "microcontroller",
+        "--locked",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 7.978,
+      "log": "example-microcontroller.01.log",
+      "logSha256": "37a5c73f72167a665f3c55c3f4e3ae2194df87f4058cac7f1a6bf429e09deb52"
+    },
+    {
+      "name": "example-differential",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "run",
+        "-p",
+        "storm-lua-conformance",
+        "--example",
+        "differential",
+        "--locked",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.164,
+      "log": "example-differential.01.log",
+      "logSha256": "547fb3b969ec4e31661877c045ff4e063aa8c0f7ea324edfe612cce3b545a563"
+    },
+    {
+      "name": "example-compiler",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "run",
+        "-p",
+        "storm-lua-conformance",
+        "--example",
+        "compiler",
+        "--locked",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.264,
+      "log": "example-compiler.01.log",
+      "logSha256": "2919a78dfd249aff7503061ffe074f3fbb5e65bb9d7ef9f61b79ee637a1ae71d"
+    },
+    {
+      "name": "example-addon_host",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "cargo",
+        "run",
+        "-p",
+        "storm-lua-conformance",
+        "--example",
+        "addon_host",
+        "--locked",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.214,
+      "log": "example-addon_host.01.log",
+      "logSha256": "21cce72b0a6fa929e4b76dd4d641e6cd35962c43b827ee678162a191e454e8d2"
+    },
+    {
+      "name": "python-tools",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/tests",
+        "-v"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.114,
+      "log": "python-tools.01.log",
+      "logSha256": "31d18235f72aefe2c33954b6ca93a0f0a7f2631fb2d975a2d5237579e51bce57"
+    },
+    {
+      "name": "screen-fixtures",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "python3",
+        "tools/check_screen_fixtures.py"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.064,
+      "log": "screen-fixtures.01.log",
+      "logSha256": "c155cdb48b3762aa43d85a925b4ac61cec77858bafb2e9e2ce5570566b561cef"
+    },
+    {
+      "name": "npm-ci",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "packages/lua-engine",
+        "ci",
+        "--offline",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.565,
+      "log": "npm-ci.01.log",
+      "logSha256": "e37ab260c14eb4e9cf5cbd344c65b281feaca25b62ddca2b8607e4bfdaab609f"
+    },
+    {
+      "name": "npm-tests",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "packages/lua-engine",
+        "test"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.17,
+      "log": "npm-tests.01.log",
+      "logSha256": "af21bd5e4597b6c2f74c6b130ffbfdcd2a1f738bb2f8ff3ab8c8eae49a6acaf6"
+    },
+    {
+      "name": "toolchain-notices",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "python3",
+        "tools/generate-toolchain-licenses.py",
+        "--check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.565,
+      "log": "toolchain-notices.01.log",
+      "logSha256": "6f8c150c25e861f108a60a4d89d1dfc1ba32e8cbcdd4b2ebccbbf5be311527bb"
+    },
+    {
+      "name": "runtime-build",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/build-wasm.mjs",
+        "--with-tests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 26.172,
+      "log": "runtime-build.01.log",
+      "logSha256": "bfd353262ef896145e9a5e0172a216cc03faf70ba941499f8f494b28ac43db8f"
+    },
+    {
+      "name": "compiler-build",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/build-compiler.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 8.092,
+      "log": "compiler-build.01.log",
+      "logSha256": "fefb4d6571498bfccc938065af15f4c76068b0b8806e2a410a4fc8dc6f369aa7"
+    },
+    {
+      "name": "compiler-tests",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "packages/lua-engine",
+        "run",
+        "test:compiler"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.468,
+      "log": "compiler-tests.01.log",
+      "logSha256": "cd9000b0077aad8d572753d74adb385427d70b176e3de47d17029fd5a38b264b"
+    },
+    {
+      "name": "wasm-tests",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/test-wasm.mjs",
+        "--with-tests"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.068,
+      "log": "wasm-tests.01.log",
+      "logSha256": "a229bc32c917eba6bcb6a9c33fa83efc4722030af759beebffd69c5c2d185e4a"
+    },
+    {
+      "name": "runtime-browser",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/test-browser.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 5.524,
+      "log": "runtime-browser.01.log",
+      "logSha256": "28516b596d59a799604e3843fc1394b4fca67f3e96c397c2562f6ab1a5138941"
+    },
+    {
+      "name": "compiler-browser",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/test-compiler-browser.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.067,
+      "log": "compiler-browser.01.log",
+      "logSha256": "07af3d75f7ea60707ae69da22f864844a304080339affd31532687e51614849a"
+    },
+    {
+      "name": "isolated-package",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/test-package.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.218,
+      "log": "isolated-package.01.log",
+      "logSha256": "af71f19305f6ff3c0ac52a436ac9abfb9439fc00422f4aae0849601a6d468c0f"
+    },
+    {
+      "name": "docs-validate",
+      "repository": "docs-site",
+      "argv": [
+        "npx",
+        "--offline",
+        "mint",
+        "validate"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 7.828,
+      "log": "docs-validate.01.log",
+      "logSha256": "7d3c08454f91959947c9dd5f6deb4ea25191740fc099d326aaa172749154e8c9"
+    },
+    {
+      "name": "docs-links",
+      "repository": "docs-site",
+      "argv": [
+        "npx",
+        "--offline",
+        "mint",
+        "broken-links"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.67,
+      "log": "docs-links.01.log",
+      "logSha256": "6f34eed3d89bcde06998f9cc799d19602f841502db6aaabf138a08a8b49643e2"
+    },
+    {
+      "name": "blog-check",
+      "repository": "makkii-jp-blog",
+      "argv": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 5.173,
+      "log": "blog-check.01.log",
+      "logSha256": "67c46164474eb4afbd3f515540119089ba5dc66b4b33c38451b1cc7b902f1a60"
+    },
+    {
+      "name": "blog-build",
+      "repository": "makkii-jp-blog",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.573,
+      "log": "blog-build.01.log",
+      "logSha256": "566e356cbe81eaa318e799d5c9b1117e240490e2bdee5b33fe0cde835cfcfe5b"
+    },
+    {
+      "name": "min-format",
+      "repository": "stormmin",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.565,
+      "log": "min-format.02.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "min-tests",
+      "repository": "stormmin",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 13.783,
+      "log": "min-tests.02.log",
+      "logSha256": "efccbf25143aad133aa13aa7bac6d92cc8c3f98185ffe55cdee171f57b6d55d5"
+    },
+    {
+      "name": "min-clippy",
+      "repository": "stormmin",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--offline",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.214,
+      "log": "min-clippy.02.log",
+      "logSha256": "dda7980e8da1041233b9bd7cd86f479320cbe44ef953019bb06c5f1c023ea622"
+    },
+    {
+      "name": "min-typescript-semantics",
+      "repository": "stormmin",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.57,
+      "log": "min-typescript-semantics.02.log",
+      "logSha256": "78b8f872de7a9f4d4486b4dafa6ee97d1db522472fc43a760478ee88b420702f"
+    },
+    {
+      "name": "min-wasm",
+      "repository": "stormmin",
+      "argv": [
+        "npm",
+        "run",
+        "test:wasm"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 13.412,
+      "log": "min-wasm.01.log",
+      "logSha256": "c4a0cf3c4d8d283b3765963bb322eeab092505d43f4eb0c0d2326eae7ad41702"
+    },
+    {
+      "name": "app-ci",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "app",
+        "ci",
+        "--offline",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.479,
+      "log": "app-ci.01.log",
+      "logSha256": "164ec9a18702f66eb076d1d5d738bfbaa8141a04a8a5c059ff026c39259e4b3e"
+    },
+    {
+      "name": "app-build",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "app",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 6.634,
+      "log": "app-build.01.log",
+      "logSha256": "0e46c86e025985ccc1f384730414faa6de13d5c1a42220522ea8d95a1f12fa9d"
+    },
+    {
+      "name": "app-tests",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "app",
+        "test"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.324,
+      "log": "app-tests.01.log",
+      "logSha256": "7fa65d3c3ab8513ef95214dbcbfc15f28a05a11cc60bc056e802dc8ebd737636"
+    },
+    {
+      "name": "min-node",
+      "repository": "stormmin",
+      "argv": [
+        "npm",
+        "run",
+        "test:node"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 19.324,
+      "log": "min-node.01.log",
+      "logSha256": "f13d97b81d8ca730e922898ae4a147e92a7a841289853ab8fa3abba92a70935c"
+    },
+    {
+      "name": "min-cli",
+      "repository": "stormmin",
+      "argv": [
+        "npm",
+        "run",
+        "test:cli"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 13.478,
+      "log": "min-cli.01.log",
+      "logSha256": "3d89036efce282236b9e2ccbc0fbd4d22da5a124775ef51e7c32300c30550c37"
+    },
+    {
+      "name": "min-browser",
+      "repository": "stormmin",
+      "argv": [
+        "npm",
+        "run",
+        "test:wasm:browser"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 5.827,
+      "log": "min-browser.01.log",
+      "logSha256": "b3303be9fd5a045c240575a63cdb558a613a8daad161c859220f761783f9560b"
+    },
+    {
+      "name": "min-static",
+      "repository": "stormmin",
+      "argv": [
+        "node",
+        "scripts/check-static-web.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.314,
+      "log": "min-static.01.log",
+      "logSha256": "fa018519a05c11bd9eefb2f42509394790fbbcd94e337092f8c3ca0527c22f11"
+    },
+    {
+      "name": "app-browser",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "app",
+        "run",
+        "test:browser"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 21.877,
+      "log": "app-browser.01.log",
+      "logSha256": "e9b2b712bfc28a8dfe2dc80e3167c2efdf3c619ee82d7068b835bf52d2f117c3"
+    },
+    {
+      "name": "artifact-paths",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "node",
+        "tools/check-artifacts.mjs",
+        "packages/lua-engine/dist",
+        "app/dist"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.164,
+      "log": "artifact-paths.01.log",
+      "logSha256": "d24b8493f4eb4c93d0a0b2dbd5404fe23fce208b6a0adfef8078b20ab91b1bec"
+    },
+    {
+      "name": "worker-dry-run",
+      "repository": "storm-lua-engine",
+      "argv": [
+        "npm",
+        "--prefix",
+        "app",
+        "run",
+        "deploy:dry-run"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.767,
+      "log": "worker-dry-run.01.log",
+      "logSha256": "5caaabbfa98c51462875586bff60abe847e04146ba4c24f24d66c5ff785402cf"
+    }
+  ],
+  "correctedGateFailure": {
+    "gate": "min-typescript-semantics",
+    "initialResult": "7 verifier process-launch failures because target/release was assumed instead of Cargo target_directory",
+    "correction": "test launcher resolves cargo metadata target_directory; existing binary overrides retained; compiler assertions unchanged",
+    "finalPassed": 25
+  },
+  "mappingReview": {
+    "cases": 5,
+    "beforeInvalidOrigins": 13,
+    "afterInvalidOrigins": 0,
+    "generatedCodeUnchangedInCases": true
+  },
+  "publicHistory": {
+    "base": "725f457189b3b7c47b1f4d2079f3eac08771e6ad",
+    "head": "8707a80f97722fb7ea6f1f7b7b86a58b5b37cdef",
+    "incomingCommits": 8,
+    "scannedObjects": 335,
+    "scannedBytes": 3396841,
+    "largeObjects": [],
+    "findings": [],
+    "trackedArtifactCandidates": []
+  },
+  "dependencyReview": {
+    "normalDependencies": [
+      {
+        "crate": "storm-lua-build",
+        "normalDependencyExclusions": [
+          "mlua",
+          "storm-lua-vm",
+          "storm-lua-microcontroller"
+        ],
+        "passed": true,
+        "sha256": "2993c89f4cb182c387d16a4329b98ba1c18f355ba758d7e38308a13b79018192"
+      },
+      {
+        "crate": "storm-lua-microcontroller",
+        "normalDependencyExclusions": [
+          "storm-lua-build",
+          "storm-lua-minify",
+          "storm-lua-syntax",
+          "storm-lua-conformance"
+        ],
+        "passed": true,
+        "sha256": "2aeeae25e9da97ec37088ddb06d96e85bf4fdd6ef9787ca12694e8c213b99764"
+      }
+    ],
+    "unchangedFormatPaths": [
+      "crates/storm-lua-spec/src/io.rs",
+      "crates/storm-lua-spec/src/draw.rs",
+      "crates/storm-lua-spec/src/abi.rs",
+      "crates/storm-lua-spec/src/command_wire.rs",
+      "crates/storm-lua-bridge",
+      "packages/lua-engine/src/values.ts",
+      "packages/lua-engine/src/raw.ts"
+    ]
+  },
+  "validationTarball": {
+    "filename": "stormcat-works-storm-lua-engine-0.2.0.tgz",
+    "bytes": 1238238,
+    "sha256": "97f31ba49211fafab5fc50cfde63edf57d0f035109b678956326d50f6a0659c2",
+    "fileCount": 60,
+    "npmIntegrity": "sha512-b6Tc0QBkPUZ+xz9zccI7Pwg62hXAC0Fld0qoiSv9XqgyPODKrQcJE6PV/o5PDCjPcZFIsYLvCVCxIB4grbZzHg=="
+  },
+  "wasmAssets": [
+    {
+      "path": "packages/lua-engine/dist/compiler-wasm/compiler_bg.wasm",
+      "bytes": 2025499,
+      "sha256": "54ee7d1c365dbd5807c65473b16e125b75e55bd301b5c5fad77c9ab47ff290ac"
+    },
+    {
+      "path": "packages/lua-engine/dist/wasm/screen.wasm",
+      "bytes": 81617,
+      "sha256": "17dba4213c2e43a5ff710cf630aa2724ad0d51397b575ce2b204a4e29291b21f"
+    },
+    {
+      "path": "packages/lua-engine/dist/wasm/storm_lua_wasm.wasm",
+      "bytes": 870739,
+      "sha256": "f07199e26b32e0890155616a526855eac363648991b281ec4e33b9b086ad42cd"
+    }
+  ],
+  "sdkAndPlaygroundWasmIdentical": true,
+  "browserChecks": [
+    {
+      "browser": "chromium",
+      "recipes": 13,
+      "desktop": [
+        1440,
+        1100
+      ],
+      "mobile": [
+        390,
+        844
+      ],
+      "reload": true,
+      "invalidImportPreserved": true,
+      "cancel": true,
+      "compilerOnly": true,
+      "rasterOnly": true,
+      "errors": []
+    },
+    {
+      "browser": "firefox",
+      "recipes": 13,
+      "desktop": [
+        1440,
+        1100
+      ],
+      "mobile": [
+        390,
+        844
+      ],
+      "reload": true,
+      "invalidImportPreserved": true,
+      "cancel": true,
+      "compilerOnly": true,
+      "rasterOnly": true,
+      "errors": []
+    },
+    {
+      "browser": "webkit",
+      "recipes": 13,
+      "desktop": [
+        1440,
+        1100
+      ],
+      "mobile": [
+        390,
+        844
+      ],
+      "reload": true,
+      "invalidImportPreserved": true,
+      "cancel": true,
+      "compilerOnly": true,
+      "rasterOnly": true,
+      "errors": []
+    }
+  ],
+  "downstreamParity": {
+    "inputCount": 100,
+    "comparisons": 400,
+    "byteIdenticalSuccesses": 392,
+    "matchingEnvironmentRejections": 8,
+    "profiles": [
+      "default",
+      "exact",
+      "safe",
+      "fast"
+    ],
+    "zeroCostNewlines": false
+  },
+  "privateEvidenceSha256": {
+    "parity": "2704cb405a587252eb850426135ee80c2df022e8dce5b6c30f00275bf030d4d5",
+    "fullGateAttempts": "17c91aad726c75fb11b07080a446a9822dfbdd1f372f3aab0daac217b177ca5d",
+    "artifactReceipt": "d5a5ed3ac36b8212e808aaf6b3c967696d0eab8796fdce962ab8ca0609a13c93"
+  },
+  "limits": [
+    "No remote CI for this unpublished candidate",
+    "No production route validation",
+    "No full real-world corpus readmission or performance comparison",
+    "No optimized source maps or restored optimized variables",
+    "No new Phys Sim/Storm Code/Editor product migration performed",
+    "Non-minified maps remain line-granular and mixed-source lines are best effort",
+    "History scans and provenance review are bounded checks, not a proof of all possible secrets or legal provenance"
+  ]
+}

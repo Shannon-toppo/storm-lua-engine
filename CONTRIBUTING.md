@@ -44,3 +44,7 @@ Rustdoc broken intra-doc linksはCIでエラーにする。新しい依存・pub
 ## Playground consumer
 
 SDKの全WASMとTypeScriptを先にビルドし、`npm --prefix app ci`、`npm --prefix app run build`、`npm --prefix app test`、`npm --prefix app run test:browser`を実行します。SDKからappへの逆依存は作りません。配布物は`node tools/check-artifacts.mjs app/dist`で検査します。公開用Workerのdry-runは本番配備とは区別します。
+
+## v0.2.0の非短縮Source Map
+
+`conformance/tests/source_maps.rs`は実Native VM、`packages/lua-engine/tests/wasm/source-map.test.mjs`は実WASMで原文位置を確認します。`node tools/test-package.mjs`は梱包済みSDKへ独立consumerを導入し、`examples/consumer/source-map.mjs`を実行します。trace-mappingはそのconsumerだけの依存で、SDKの実行時依存には入りません。

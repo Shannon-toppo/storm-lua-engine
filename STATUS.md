@@ -1,45 +1,31 @@
 # Current status
 
-2026-09-27 — **Storm Lua Engine 0.2.0（リリース準備中・未公開）**。既存の0.1.0から、Compiler SDK、game/extended、ホストbindings、Playground、開発用ソース読み込みをまとめています。公開・配備は明示的な別操作です。[CHANGELOG](CHANGELOG.md)・[利用ガイド](https://docs.makkii.jp/storm-lua-engine/index)。
+2026-09-27 — **Storm Lua Engine v0.2.0のローカルリリース候補の完成確認1〜5が完了。未push・未公開・未配備。** 版番号はworkspace、npm SDK、Playgroundとも0.2.0です。範囲と公開手順は[release](docs/release.md)、残件は[TASKS](TASKS.md)、利用ガイドは[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)です。
 
-## 開発用requireとload履歴（E3/E4）
+## v0.2.0に含む実装
 
-高レベルRust/TypeScript/WASMにrequireLoaderを追加。hostはソースとchunk名だけを返し、Luaの同じ継続でinclude-once実行します。戻り値破棄・共有global・別local・循環・元ファイルでの停止/resumeに対応し、命令予算をリセットしません。
+| 領域 | 現在の範囲 |
+| --- | --- |
+| Runtime | Vehicle/Addon、信号・プロパティ、描画、ホストデバッガ、保存、明示HTTP・地図・server接続 |
+| Compiler | Vehicle用syntax/analysis/minify/buildと独立WASM・TS入口。Storm MinのCLI/Webは同じSDKを利用 |
+| 環境 | gameが既定、extendedは明示選択。debug.logは両環境、print等はextended。ログ配送先と関数公開を分離 |
+| 正確性 | 4パス撤去、外部グローバル保持、_ENVと拡張環境の字句短縮、捕捉値の寿命と不正finalizer入力の修正 |
+| ホスト拡張 | 初期化前のvalues/functions bindings、reset/reloadで再適用、専用compiler Worker接続 |
+| ソース読み込み | extended専用のLB方式requireLoader。Vehicleは正常完了したload履歴をresetで再実行 |
+| 非短縮Source Map | game向けプロジェクトをbuild(minify:false)し、元ファイルの停止位置・エラー位置へ戻す。行単位、合成行は原文位置を捏造しない |
+| Playground | app/のCLI/Web、13確認例、明示Worker、入力・結果保存、入出力、中断。Storm Minと併存。Addon Labは撤去済み |
+| 文書 | 利用ガイドはdocs-site、契約・設計・検証・実行例は本リポ。ブログの初回版/次版記事は下書き |
 
-Vehicle resetは正常完了した全loadを順に再実行。失敗/未完了loadは履歴から除外し、履歴上限を適用します。Addonは初回loadのlifecycleを保ち、必要な開発チャンクをrequireで扱います。[契約](docs/specs/source-loading.md)・[検証](docs/verification/source-loading-20260927.md)。
+## 候補の最終確認
 
-利用ガイド6本の本文をdocs.makkii.jp側へ移し、本リポには案内・契約・設計・検証・実行例を維持します。公開資料とブログは対応するローカルブランチの原稿段階です。
+実装commit `8707a80`に対する41種の最終ゲートがすべて成功しました。Engine Native472件、WASM48件、SDK JS27件、Playground15件＋3ブラウザ各13例、Storm Min Rust492件／独立JS25件と新しいNative/WASM400条件を再検証。[0.2.0 candidate](docs/verification/release-candidate-0.2.0.md)と[機械記録](docs/verification/release-candidate-0.2.0.json)へ集約しています。過去の件数や出力一致を、新しい候補の実行結果として使い回していません。
 
-## 環境契約の是正（開発ブランチ）
+既存の検証記録: [source loaderと0.2準備](docs/verification/source-loading-20260927.md)、[環境修正](docs/verification/environment-contract-20260926.md)、[Playground](docs/verification/playground-20260926.md)。初回移管の685条件一致はその時点の証跡であり、後続の正確性修正後の出力保証ではありません。
 
-ゲーム向けgameと明示的extendedを分離し、debug.logとホストデバッガを区別した。onLogはprintを注入しない。単一ソースとプロジェクトの診断を共有し、外部名の改名/nil化を修正。_ENVと拡張環境はトークン・行位置を維持する字句短縮を使う。[環境仕様](docs/specs/environments.md)・[ホストガイド](docs/guide/environments.md)。この契約は公開済み0.1.0へ遡及しない。
+## 公開との境界
 
-## Compiler SDK統合（実装済み・未公開）
+GitHub Actionsの公開対象commit確認、正式配布物の固定、タグ・npm・GitHub Release、Playground/ガイド/ブログの本番公開は別の明示工程です。通常pushからnpmを自動publishしません。Workerは専用routeの設定とdry-runまでで、Storm Minのrouteを変更しません。
 
-構文・解析・最適化・ビルドの4クレートとcompiler-only WASM adapterを追加した。既存のCLI/Node/Webは同じ実装を利用する。`/compiler`のTypeScript入口はruntimeをロードしない。最適化はVehicleのみ、Addon指定は明示拒否する。
+**最適化後Source Mapはv0.2.5またはv0.3.0へ分離**します。由来情報を考慮せず実装された最適化器の大規模変更であり、v0.2.0の完成条件に含めません。Addonコンパイラ、require方式の統合・gameとloaderの分離、追加map API、全consumerの移行完了も今回の必須条件ではありません。
 
-既定無効4パスを削除し、廃止IDは全入口で拒否する。生成コードの直接確認で見つかったcaptured property/inputの寿命変更と、公開finalizerの不正ソース時panicも修正した。
-
-Engine native 445件、利用側回帰492件、Node/WASM/3ブラウザ、隔離npm consumerで確認。131入力×685条件の出力は従来版と同一で、Native/Engine-WASMも685組一致。詳細は[統合検証](docs/verification/compiler-integration-20260926.md)、使い方は[Compiler guide](docs/guide/compiler.md)。
-
-## Storm Lua Engine: Playground（実装・検証済み、未配備）
-
-Storm Minとは併存するSDK確認用CLI/Webを`app/`へ実装しました。13確認例、共通操作runner、独立compiler/runtime Worker、入力/結果保存、version付き入出力、明示中断に対応します。ホスト・HTTP・地図は明示テスト入力であり、実通信や仮物理は持ちません。
-
-Addon LabとThree.js/CodeMirrorのアプリ依存は撤去し、SDK確認はPlaygroundへ移しました。`app/wrangler.jsonc`は専用routeを持ち、dry-runまで確認。本番公開・SDKバージョン更新・pushは未実施。[操作](app/README.md)・[Playground検証](docs/verification/playground-20260926.md)。
-
-## v0.1.0の実装済み範囲
-
-| 対象 | 状態 |
-|---|---|
-| 仕様の正本 | 本リポジトリの仕様・採用済みケース・実装。下流アプリへ逆依存しない |
-| 画面契約 | 731ケースの入力と期待RGBAを保持。直接描画と実Lua経路を検証 |
-| フォント | 同梱グリフ／metricsを維持。外部取得や抽出は不要 |
-| ホスト境界 | ワールド、地形、server関数、通信、実行タイミングは利用アプリが提供 |
-| 権利表示 | プロジェクト、描画構成要素、Cargo依存、SDK／システムライブラリ、Rust標準ライブラリの通知を同梱 |
-| ローカル検証 | Native 56、JS 26、WASM 19、Python 19、Addon Lab 14が成功 |
-| ブラウザ | 3エンジンで本体の直接／Lua描画、ホスト機能、WorkerとAddon Labのdesktop／mobile操作を検証 |
-| 梱包 | 43ファイルのnpm packageを独立環境へoffline installしてconsumer例を実行。SDKと静的サイトの48ファイル／3WASMをパス検査 |
-| CI | NativeのLinux／Windows／macOSと、WASM・ブラウザの検証をpush時に実行。結果はGitHub Actionsで管理 |
-
-今回のローカル測定は[0.1.0検証記録](docs/verification/release-0.1.0.md)、追加の検証・実装項目は[TASKS](TASKS.md)、公開時の確認事項は[リリース手順](docs/release.md)に記載しています。過去のAddon Lab検証は当時の結果として保持し、現行Playgroundの結果と混同しません。
+初回公開の事実と当時の測定は[0.1.0検証記録](docs/verification/release-0.1.0.md)を参照してください。

@@ -34,3 +34,7 @@
 | [Verification](verification/repository.md) | 今回の実行結果と未検証範囲 |
 
 [AGENTS](../AGENTS.md)は作業規則、[CONTRIBUTING](../CONTRIBUTING.md)は開発手順、[STATUS](../STATUS.md)は現在地の単一正本。
+
+## v0.2.0候補の確認
+
+[非短縮マップ契約](specs/source-maps.md) · [候補の検証記録](verification/release-candidate-0.2.0.md)。利用者向け本文はdocs.makkii.jpのガイドを参照します。
