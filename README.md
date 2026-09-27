@@ -1,6 +1,6 @@
 # Storm Lua Engine
 
-**v0.2.0 リリース準備中。** Compiler SDK、環境プロファイル、開発用require、Playgroundを含みます。マニフェスト更新は公開を意味しません。[利用ガイド](https://docs.makkii.jp/storm-lua-engine/index)と[変更点](CHANGELOG.md)を参照してください。
+**v0.2.0 公開済み。** Compiler SDK、環境プロファイル、開発用require、Playgroundを提供しています。[利用ガイド](https://docs.makkii.jp/storm-lua-engine/index)と[変更点](CHANGELOG.md)を参照してください。
 
 **StormworksのLuaを、あなたのアプリケーションで動かす。**
 
@@ -18,7 +18,7 @@ TypeScript／JavaScript: `npm install @stormcat-works/storm-lua-engine`
 
 実行用・描画専用WASM、型定義、フォントを同梱しています。利用するだけならRustやEmscriptenは不要です。[GitHub Releases](https://github.com/Stormcat-Works/storm-lua-engine/releases)ではnpm tarballと、そのまま配信できるAddon Labも配布します。
 
-Rust: 公開後は必要なクレートをGitタグで参照します。未公開時は同じcheckoutへのpath依存で確認します。例えば`storm-lua-addon = { git = "https://github.com/Stormcat-Works/storm-lua-engine", tag = "v0.2.0" }`。詳しい設定は[導入ガイド](docs/guide/getting-started.md)を参照してください。
+Rust: 必要なクレートを公開Gitタグで参照します。例えば`storm-lua-addon = { git = "https://github.com/Stormcat-Works/storm-lua-engine", tag = "v0.2.0" }`。詳しい設定は[導入ガイド](docs/guide/getting-started.md)を参照してください。
 
 ## できること
 
@@ -69,3 +69,5 @@ Native、Node／WASM、Chromium・Firefox・WebKit、独立したnpmインスト
 ビルド・テスト・依存境界の確認は[CONTRIBUTING.md](CONTRIBUTING.md)、内部設計は[Architecture](docs/design/architecture.md)へ。利用するだけの場合、内部クレート構造を理解する必要はありません。
 
 MIT License。描画参照元と依存ライブラリの権利表示は[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にまとめています。StormworksおよびGeometaとは独立したコミュニティプロジェクトです。
+
+公開後のregistry導入・本番配備の確認は[0.2.0公開記録](docs/verification/release-0.2.0.md)、Webは[Playground](https://www.makkii.jp/tools/stormworks/storm-lua-engine/)を参照してください。

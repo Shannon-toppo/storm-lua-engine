@@ -38,3 +38,5 @@
 ## v0.2.0候補の確認
 
 [非短縮マップ契約](specs/source-maps.md) · [候補の検証記録](verification/release-candidate-0.2.0.md)。利用者向け本文はdocs.makkii.jpのガイドを参照します。
+
+現在の公開版: [v0.2.0の公開・配備確認](verification/release-0.2.0.md) / [機械記録](verification/release-0.2.0.json)。

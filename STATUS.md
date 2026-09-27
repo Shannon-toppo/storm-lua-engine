@@ -1,6 +1,6 @@
 # Current status
 
-2026-09-27 — **Storm Lua Engine v0.2.0のローカルリリース候補の完成確認1〜5が完了。未push・未公開・未配備。** 版番号はworkspace、npm SDK、Playgroundとも0.2.0です。範囲と公開手順は[release](docs/release.md)、残件は[TASKS](TASKS.md)、利用ガイドは[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)です。
+2026-09-27 — **Storm Lua Engine v0.2.0をnpm/GitHubへ公開し、Playground・ガイド・2記事の本番公開まで完了。** 版番号はworkspace、npm SDK、Playgroundとも0.2.0です。範囲と公開手順は[release](docs/release.md)、残件は[TASKS](TASKS.md)、利用ガイドは[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)です。
 
 ## v0.2.0に含む実装
 
@@ -14,7 +14,7 @@
 | ソース読み込み | extended専用のLB方式requireLoader。Vehicleは正常完了したload履歴をresetで再実行 |
 | 非短縮Source Map | game向けプロジェクトをbuild(minify:false)し、元ファイルの停止位置・エラー位置へ戻す。行単位、合成行は原文位置を捏造しない |
 | Playground | app/のCLI/Web、13確認例、明示Worker、入力・結果保存、入出力、中断。Storm Minと併存。Addon Labは撤去済み |
-| 文書 | 利用ガイドはdocs-site、契約・設計・検証・実行例は本リポ。ブログの初回版/次版記事は下書き |
+| 文書 | 利用ガイドはdocs-site、契約・設計・検証・実行例は本リポ。ブログの初回版/次版記事も公開済み |
 
 ## 候補の最終確認
 
@@ -22,9 +22,13 @@
 
 既存の検証記録: [source loaderと0.2準備](docs/verification/source-loading-20260927.md)、[環境修正](docs/verification/environment-contract-20260926.md)、[Playground](docs/verification/playground-20260926.md)。初回移管の685条件一致はその時点の証跡であり、後続の正確性修正後の出力保証ではありません。
 
-## 公開との境界
+## 公開・自動配備
 
-GitHub Actionsの公開対象commit確認、正式配布物の固定、タグ・npm・GitHub Release、Playground/ガイド/ブログの本番公開は別の明示工程です。通常pushからnpmを自動publishしません。Workerは専用routeの設定とdry-runまでで、Storm Minのrouteを変更しません。
+[公開検証記録](docs/verification/release-0.2.0.md)と[機械記録](docs/verification/release-0.2.0.json)に、GitHub Actionsの3 OS/WASM、公開済みnpmの新規導入、本番3ブラウザ各13例、ガイドとブログの応答を集約しています。SDKタグv0.2.0とtarballは固定し、公開後に差し替えていません。
+
+Playgroundは専用Workerで公開し、releaseブランチへのpushからCloudflare Workers Buildsでソースビルド・検証・自動配備します。main/developのpushでは配備せず、npm publishは別の明示工程です。配備後のCSP調整はappのHTML nonceと専用パスのゾーン設定で行い、SDKのLua実装は変更していません。
+
+Storm Minのpublic SDK参照は専用ブランチへpush済みですが、同privateリポのremote CIは課金制限で開始前に停止しています。Engineの公開CIは成功済みで、両者を混同しません。
 
 **最適化後Source Mapはv0.2.5またはv0.3.0へ分離**します。由来情報を考慮せず実装された最適化器の大規模変更であり、v0.2.0の完成条件に含めません。Addonコンパイラ、require方式の統合・gameとloaderの分離、追加map API、全consumerの移行完了も今回の必須条件ではありません。
 

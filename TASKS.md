@@ -12,7 +12,7 @@
 | 公開対象の点検 | 公開済み0.1.0以降のreachable履歴・現行tracked tree・梱包内容・権利表示を確認。非公開コーパスを製品へ含めない |
 | 候補の検証記録 | 対象commit/ソースdigest、コマンド、結果、生成物hash、既知の制限を[候補記録](docs/verification/release-candidate-0.2.0.md)へ集約 |
 
-## ローカル完成後の公開工程（未実施）
+## v0.2.0の公開工程（完了）
 
 | 順番 | 工程 |
 | --- | --- |
@@ -25,7 +25,9 @@
 
 手順と実行条件は[release](docs/release.md)。Playground CLIはリポジトリから使う確認用CLIとして提供し、独立npx packageや各OSの単体binaryを今回の条件に加えません。
 
-## 今回の公開を待たせない後続項目
+[公開記録](docs/verification/release-0.2.0.md)に対象commit・CI・registry導入・本番確認を記録しました。Storm Min自身のnpm公開は別工程で、private CIの課金制限は未実行理由として明示しています。
+
+## 後続項目
 
 | 対象 | 扱い・確認条件 |
 | --- | --- |

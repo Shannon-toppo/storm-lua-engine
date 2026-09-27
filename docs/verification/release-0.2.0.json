@@ -1,0 +1,207 @@
+{
+  "version": "0.2.0",
+  "publishedOn": "2026-09-27",
+  "sdk": {
+    "tag": "v0.2.0",
+    "commit": "22592de08cfaadfc5696da001add1634149ba2cc",
+    "npmPackage": "@stormcat-works/storm-lua-engine",
+    "latest": "0.2.0",
+    "sha256": "97f31ba49211fafab5fc50cfde63edf57d0f035109b678956326d50f6a0659c2",
+    "integrity": "sha512-b6Tc0QBkPUZ+xz9zccI7Pwg62hXAC0Fld0qoiSv9XqgyPODKrQcJE6PV/o5PDCjPcZFIsYLvCVCxIB4grbZzHg==",
+    "freshRegistryConsumer": "passed",
+    "releaseAssets": [
+      {
+        "filename": "stormcat-works-storm-lua-engine-0.2.0.tgz",
+        "bytes": 1238238,
+        "sha256": "97f31ba49211fafab5fc50cfde63edf57d0f035109b678956326d50f6a0659c2"
+      },
+      {
+        "filename": "storm-lua-engine-playground-0.2.0.zip",
+        "bytes": 2051682,
+        "sha256": "fdf051b1f48391c8370fcf0c84b298a4dec488be084240dd466c8d210d00e1e5"
+      }
+    ]
+  },
+  "githubRelease": "https://github.com/Stormcat-Works/storm-lua-engine/releases/tag/v0.2.0",
+  "ci": {
+    "sdk": {
+      "runId": 36296691649,
+      "url": "https://github.com/Stormcat-Works/storm-lua-engine/actions/runs/36296691649",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "wasm",
+          "conclusion": "success",
+          "url": "https://github.com/Stormcat-Works/storm-lua-engine/actions/runs/36296691649/job/108556739337"
+        },
+        {
+          "name": "native (macos-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/Stormcat-Works/storm-lua-engine/actions/runs/36296691649/job/108556739454"
+        },
+        {
+          "name": "native (windows-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/Stormcat-Works/storm-lua-engine/actions/runs/36296691649/job/108556739473"
+        },
+        {
+          "name": "native (ubuntu-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/Stormcat-Works/storm-lua-engine/actions/runs/36296691649/job/108556739485"
+        }
+      ]
+    },
+    "delivery": {
+      "commit": "48bff8fa2ac3a582d606762f0f6d51e8b56005da",
+      "url": "https://github.com/Stormcat-Works/storm-lua-engine/actions/runs/36298165552",
+      "conclusion": "success"
+    }
+  },
+  "playground": {
+    "url": "https://www.makkii.jp/tools/stormworks/storm-lua-engine/",
+    "revision": "48bff8fa2ac3a582d606762f0f6d51e8b56005da",
+    "worker": "storm-lua-engine-playground",
+    "branch": "release",
+    "root": "/app",
+    "buildCommand": "bash scripts/cloudflare-build.sh",
+    "deployCommand": "npm run deploy",
+    "pushTriggeredBuild": "78d2c0e7-113a-499b-b739-eebe22fc4c82",
+    "buildOutcome": "success",
+    "assets": [
+      {
+        "path": "engine/storm_lua_wasm.wasm",
+        "sha256": "f07199e26b32e0890155616a526855eac363648991b281ec4e33b9b086ad42cd",
+        "bytes": 870739,
+        "contentType": "application/wasm",
+        "cacheControl": "no-cache"
+      },
+      {
+        "path": "engine/screen.wasm",
+        "sha256": "17dba4213c2e43a5ff710cf630aa2724ad0d51397b575ce2b204a4e29291b21f",
+        "bytes": 81617,
+        "contentType": "application/wasm",
+        "cacheControl": "no-cache"
+      },
+      {
+        "path": "engine/compiler/compiler_bg.wasm",
+        "sha256": "54ee7d1c365dbd5807c65473b16e125b75e55bd301b5c5fad77c9ab47ff290ac",
+        "bytes": 2025499,
+        "contentType": "application/wasm",
+        "cacheControl": "no-cache"
+      }
+    ],
+    "browsers": [
+      {
+        "name": "chromium",
+        "recipes": 13,
+        "reloadPreserves": true,
+        "mobileNoOverflow": true,
+        "appOnlyGetRequests": true,
+        "consoleErrors": []
+      },
+      {
+        "name": "firefox",
+        "recipes": 13,
+        "reloadPreserves": true,
+        "mobileNoOverflow": true,
+        "appOnlyGetRequests": true,
+        "consoleErrors": []
+      },
+      {
+        "name": "webkit",
+        "recipes": 13,
+        "reloadPreserves": true,
+        "mobileNoOverflow": true,
+        "appOnlyGetRequests": true,
+        "consoleErrors": []
+      }
+    ],
+    "security": "Per-response CSP nonce for Cloudflare JavaScript Detections; Zaraz and RUM disabled on the Playground path only. Bot protection and strict script/connect policies retained."
+  },
+  "docs": [
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/index",
+      "status": 200,
+      "title": "Storm Lua Engine - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/getting-started",
+      "status": 200,
+      "title": "利用をはじめる - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/compiler",
+      "status": 200,
+      "title": "解析・ビルド・最適化 - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/api-reference",
+      "status": 200,
+      "title": "ホストAPIリファレンス - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/environments",
+      "status": 200,
+      "title": "環境とホスト拡張 - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/source-loading",
+      "status": 200,
+      "title": "requireと複数チャンク - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/source-maps",
+      "status": 200,
+      "title": "非短縮ビルドのソースマップ - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/playground",
+      "status": 200,
+      "title": "Storm Lua Engine: Playground - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/migration-0-2",
+      "status": 200,
+      "title": "0.1から0.2への変更 - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/addons",
+      "status": 200,
+      "title": "Addonの組み込み - makkii.jp Docs"
+    },
+    {
+      "url": "https://docs.makkii.jp/storm-lua-engine/host-services",
+      "status": 200,
+      "title": "地図・ログ・HTTP - makkii.jp Docs"
+    }
+  ],
+  "blog": [
+    {
+      "url": "https://blog.makkii.jp/posts/storm-lua-engine-v0-1",
+      "status": 200,
+      "title": "Storm Lua Engine v0.1.0を公開しました | makkii blog",
+      "inFeed": true
+    },
+    {
+      "url": "https://blog.makkii.jp/posts/storm-lua-engine-v0-2",
+      "status": 200,
+      "title": "Storm Lua Engine — Luaの実行・描画・解析を共通のSDKへ | makkii blog",
+      "inFeed": true
+    }
+  ],
+  "downstream": {
+    "repository": "Stormcat-Works/stormmin",
+    "branch": "docs/compiler-sdk-plan-20260926",
+    "engineRevision": "22592de08cfaadfc5696da001add1634149ba2cc",
+    "localIndependentTests": 25,
+    "remoteCI": "Job rejected before any steps by GitHub account payment/spending limit settings",
+    "productVersionChanged": false,
+    "productionRouteChanged": false
+  },
+  "notIncluded": [
+    "optimized source maps (deferred to 0.2.5 or 0.3.0)",
+    "Addon compiler",
+    "publication of a new Storm Min npm version",
+    "all-consumer migration completion"
+  ]
+}
