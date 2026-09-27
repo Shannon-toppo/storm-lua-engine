@@ -1,5 +1,5 @@
 /** パックされたライブラリを隔離された一時コンシューマにインストールし、両方のWASMパスを実行します。 */
-import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';
+import {mkdtemp,readFile,writeFile,rm,mkdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -46,10 +46,25 @@ console.log('Isolated installed package: Lua execution, raster, export paths and
   await writeFile(join(temporary,'source-loading.mjs'),await readFile(join(root,'examples/consumer/source-loading.mjs')));
   console.log(run(process.execPath,['source-loading.mjs'],temporary).trim());
   // Source-map decoding belongs to this consumer, not the runtime-only SDK package.
-  const development = JSON.parse(await readFile(join(root,'packages/lua-engine/package.json'),'utf8'));
-  const traceVersion = development.devDependencies['@jridgewell/trace-mapping'];
-  run(npm,['install','--offline','--ignore-scripts','--no-audit','--no-fund',`@jridgewell/trace-mapping@${traceVersion}`],temporary);
-  await writeFile(join(temporary,'source-map.mjs'),await readFile(join(root,'examples/consumer/source-map.mjs')));
-  console.log(run(process.execPath,['source-map.mjs'],temporary).trim());
+  // npm ci caches integrity-addressed tarballs, not necessarily registry metadata.
+  // Reuse the exact test-only lock entries in a child consumer; the tested SDK is
+  // still resolved from the separately installed parent node_modules directory.
+  const lock = JSON.parse(await readFile(join(root,'packages/lua-engine/package-lock.json'),'utf8'));
+  const names = ['@jridgewell/trace-mapping','@jridgewell/resolve-uri','@jridgewell/sourcemap-codec'];
+  const mapped = join(temporary,'mapped-consumer');
+  await mkdir(mapped);
+  const manifest = {name:'mapped-debug-consumer',private:true,type:'module',dependencies:{'@jridgewell/trace-mapping':lock.packages['node_modules/@jridgewell/trace-mapping'].version}};
+  const packages = {'':{name:manifest.name,dependencies:manifest.dependencies}};
+  for (const name of names) {
+    const entry = lock.packages[`node_modules/${name}`];
+    if (!entry?.resolved || !entry.integrity) throw new Error(`Missing locked consumer dependency: ${name}`);
+    const {dev, ...installedEntry} = entry;
+    packages[`node_modules/${name}`] = installedEntry;
+  }
+  await writeFile(join(mapped,'package.json'),JSON.stringify(manifest));
+  await writeFile(join(mapped,'package-lock.json'),JSON.stringify({name:manifest.name,lockfileVersion:3,requires:true,packages}));
+  run(npm,['ci','--offline','--ignore-scripts','--no-audit','--no-fund'],mapped);
+  await writeFile(join(mapped,'source-map.mjs'),await readFile(join(root,'examples/consumer/source-map.mjs')));
+  console.log(run(process.execPath,['source-map.mjs'],mapped).trim());
   console.log(`${provided?'Provided release tarball':`Packed ${packed.files.length} files`}; SDK has no runtime npm dependencies; mapped-debug consumer separately installs trace-mapping.`);
 }finally{await rm(temporary,{recursive:true,force:true});}
