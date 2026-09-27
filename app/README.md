@@ -67,3 +67,11 @@ version付きJSONのexport/importはソース・環境・操作列を持ち運�
 静的配備用は`app/dist-site/tools/stormworks/storm-lua-engine/`へ出力します。makkii.jp向けWorker設定は`app/wrangler.jsonc`に置き、Storm Minのrouteを変更しません。`npm --prefix app run deploy:dry-run`は検査だけです。実際の`deploy`は管理者の明示指示で行います。
 
 配布WebにはSDKの権利表示を含めます。アプリのVite等の開発依存はSDKのnpm依存へ追加しません。ブラウザWorker、公開用Cloudflare Worker、SDKの意味論は別の責務です。
+
+## releaseブランチからの自動配備
+
+Cloudflare Workers Buildsの本番トリガーは`release`ブランチだけを対象にします。リポジトリはStormcat-Works/storm-lua-engine、root directoryは`/app`、build commandは`bash scripts/cloudflare-build.sh`、deploy commandは`npm run deploy`です。
+
+ビルド環境変数は`SKIP_DEPENDENCY_INSTALL=1`と`NODE_VERSION=22.22.1`です。SDKを生成してからappのローカル依存を取り込む必要があるため、依存の自動インストールを無効にし、スクリプトが順番を管理します。固定Rust/Emscripten/wasm-packで同じcheckoutのSDKを作り、SDK検証、app build/test、成果物検査後に配備します。
+
+`main`/`develop`/作業ブランチのpushではこのWorkerを配備しません。公開するコードのCI成功を確認してから`release`へfast-forwardします。`version.json`でSDK版と配備したGit SHAを確認できます。npm公開はこのトリガーには含めず、検査済みtarballから別に行います。

@@ -1,7 +1,8 @@
 /** 専用ルートに静的成果物を配置するだけで、デプロイは行いません。 */
-import {cp,mkdir,rm,writeFile} from 'node:fs/promises';
+import {cp,mkdir,rm,writeFile,readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
+import {execFileSync} from 'node:child_process';
 const root=fileURLToPath(new URL('../',import.meta.url)),out=join(root,'dist-site');
 await rm(out,{recursive:true,force:true});await mkdir(join(out,'tools/stormworks/storm-lua-engine'),{recursive:true});
 await cp(join(root,'dist'),join(out,'tools/stormworks/storm-lua-engine'),{recursive:true});
@@ -16,3 +17,7 @@ await writeFile(join(out,'_headers'),`/*
   Cache-Control: public, max-age=31536000, immutable
 `);
 console.log('Playground assets ready under /tools/stormworks/storm-lua-engine/. No deployment performed.');
+
+const metadata=JSON.parse(await readFile(join(root,'package.json'),'utf8'));
+const revision=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+await writeFile(join(out,'tools/stormworks/storm-lua-engine/version.json'),JSON.stringify({version:metadata.version,revision})+'\n');

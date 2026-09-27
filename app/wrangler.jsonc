@@ -13,5 +13,13 @@
     "directory": "./dist-site",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "none"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "head_sampling_rate": 1
+    }
   }
 }

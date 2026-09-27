@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.2.0 — Unreleased
+## 0.2.0 — 2026-09-27
 
-この版はリリース準備中です。以下を一つの公開版へまとめます。タグ・npm公開・本番配備は別の明示操作です。
+Compiler SDK、実行環境の選択、開発用ソース読み込み、Playgroundをまとめたリリースです。
 
 ### 追加
 
@@ -31,6 +31,9 @@
 - 非短縮リンクの合成行を架空の元行へ割り当てない。元ファイルのbreakpoint・step・エラー位置を往復するconsumer例とNative/WASM回帰を追加。
 
 ### ドキュメントと配布
+
+- PlaygroundはCloudflare Workers Buildsからreleaseブランチpushでビルド・自動更新。設定とビルド処理はapp/で管理。npm公開は独立した明示操作。
+- 隔離パッケージのSource Map検証はlockfileのtarballを再利用し、新規CIのnpm metadata cacheに依存しない。
 
 - 利用者向けガイド本文を[docs.makkii.jp](https://docs.makkii.jp/storm-lua-engine/index)へ移設。リポジトリには契約・設計・検証・公開手順と実行可能な例を維持。
 - Rust workspace、npm SDK、Playgroundを0.2.0に統一。savedata形式、描画命令ABI、Composite I/Oレイアウトは変更しない。

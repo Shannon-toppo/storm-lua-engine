@@ -1,6 +1,6 @@
 # リリース手順
 
-リリースは管理者の明示指示で行います。CIは検証のみで、通常のpushからregistryへ自動公開しません。RustクレートはGitタグ、JavaScript／TypeScript SDKはnpm、ビルド済み配布物はGitHub Releasesで提供します。
+リリースは管理者の明示指示で行います。GitHub CIは検証のみで、通常のpushからregistryへ自動公開しません。Cloudflare Workers BuildsはreleaseブランチへのpushだけでPlaygroundを更新します。RustクレートはGitタグ、JavaScript／TypeScript SDKはnpm、ビルド済み配布物はGitHub Releasesで提供します。
 
 ## v0.2.0の完成範囲
 
@@ -12,7 +12,7 @@ Source Mapは**非短縮リンク結果の行単位対応だけ**を今回の正
 
 ## 版と契約の確認
 
-現在の準備版は**0.2.0**です。未pushのCompiler SDK・環境修正・Playground・開発用source loaderとload履歴を、この版へ集約します。公開実行前に[0.2.0確認記録](verification/source-loading-20260927.md)とCHANGELOGを確認します。
+現在の対象版は**0.2.0**です。Compiler SDK・環境修正・Playground・開発用source loaderとload履歴を、この版へ集約します。公開実行前に[0.2.0確認記録](verification/source-loading-20260927.md)とCHANGELOGを確認します。
 
 Cargo workspaceと`packages/lua-engine/package.json`の版を揃え、`CHANGELOG.md`へ利用者に影響する変更を書きます。タグは`v<version>`とします。公開済みのタグやnpmの同じ版を差し替えず、修正は新しい版として出します。
 
@@ -42,7 +42,7 @@ GitHub Releasesには検査したnpm tarball、Playgroundの静的サイトZIP�
 
 ## ブランチ
 
-`main`は公開する版、`develop`は次の変更を管理します。初回公開ではレビュー済みtreeを親なしの1commitにまとめ、そのcommitから`develop`を作成します。公開対象でない開発履歴の復旧用bundleはローカルだけに保存し、公開refやReleaseには含めません。以後の通常リリースで初期化や履歴の作り直しを繰り返しません。
+`main`は公開する版、`develop`は次の変更、`release`はPlaygroundの本番配備対象を管理します。`release`はCI確認済みcommitへfast-forwardし、Cloudflare Workers Buildsでそのcheckoutをビルド・配備します。設定と手順は[app guide](../app/README.md)のrelease節を参照してください。初回公開ではレビュー済みtreeを親なしの1commitにまとめ、そのcommitから`develop`を作成します。公開対象でない開発履歴の復旧用bundleはローカルだけに保存し、公開refやReleaseには含めません。以後の通常リリースで初期化や履歴の作り直しを繰り返しません。
 
 ## Compiler assets on the integration branch
 
@@ -52,7 +52,7 @@ A release containing the compiler subpath must additionally run `node tools/buil
 
 `app/`にはCLI/Webと公開用Worker設定を置きます。`npm --prefix app run build`は`app/dist`と専用route向け`app/dist-site`を生成します。`npm --prefix app run deploy:dry-run`は梱包検査であり、本番配備ではありません。Storm Minの製品・Worker・routeは維持します。
 
-Addon Labの現在のソース・CI参照は撤去済みです。過去版ReleaseのLab資産は書き換えません。配布物のライセンスとsource/WASM版の一致を確認し、実配備は明示的に実施します。
+Addon Labの現在のソース・CI参照は撤去済みです。過去版ReleaseのLab資産は書き換えません。配布物のライセンスとsource/WASM版の一致を確認し、実配備は明示的に許可したreleaseブランチへのpushで実施します。
 
 ## 環境契約変更の公開ゲート
 
