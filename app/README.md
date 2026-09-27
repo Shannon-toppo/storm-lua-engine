@@ -2,7 +2,7 @@
 
 SDKの解析・ビルド・最適化・実行・描画・デバッグ・ホスト接続を実際に試すCLI/Webです。Storm MinのCLI/Webとは併存し、置き換えません。ゲーム世界、仮物理、共同編集、クラウド保存は実装しません。
 
-このアプリはv0.2.0の開発ブランチに含まれます。公開済み0.1.0の機能や、makkii.jpへの配備済み状態を意味しません。
+SDK v0.2.0とともに公開しています。[Webを開く](https://www.makkii.jp/tools/stormworks/storm-lua-engine/)。SDKのnpm版とGitタグは固定し、Webの配信設定はreleaseブランチから更新します。
 
 ## 準備と起動
 
@@ -75,3 +75,9 @@ Cloudflare Workers Buildsの本番トリガーは`release`ブランチだけを�
 ビルド環境変数は`SKIP_DEPENDENCY_INSTALL=1`と`NODE_VERSION=22.22.1`です。SDKを生成してからappのローカル依存を取り込む必要があるため、依存の自動インストールを無効にし、スクリプトが順番を管理します。固定Rust/Emscripten/wasm-packで同じcheckoutのSDKを作り、SDK検証、app build/test、成果物検査後に配備します。
 
 `main`/`develop`/作業ブランチのpushではこのWorkerを配備しません。公開するコードのCI成功を確認してから`release`へfast-forwardします。`version.json`でSDK版と配備したGit SHAを確認できます。npm公開はこのトリガーには含めず、検査済みtarballから別に行います。
+
+## 本番のCSPとCloudflare
+
+`worker.ts`はHTMLレスポンスのCSPへ毎回新しいnonceを追加する配信処理だけを行います。CloudflareのJavaScript Detectionsはこのnonceで動作し、Bot対策を停止したり、`unsafe-inline`を許可したりしません。HTMLはnonce再利用を防ぐためno-store、JS/WASM等は既存の静的配信です。Luaやコンパイラをサーバーで実行するAPIはありません。
+
+ゾーンのConfiguration Ruleで、`www.makkii.jp/tools/stormworks/storm-lua-engine/`だけをZarazおよびRUMの自動挿入対象から除外しています。CSPの`connect-src 'self'`を緩めず、他のサイトやツールの解析設定は変更しません。このルールはゾーン設定であり、Workerの再配備とは独立に維持します。
